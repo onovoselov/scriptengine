@@ -33,7 +33,7 @@ satge может быть: Pending, InProgress, DoneOk, DoneError, Interrupted
 Получение информации о задаче
 --------------
 ```
-GET http://localhost:8080/task/f9d4092f-a614-4c58-96f7-8a1e0b564078
+curl -X GET http://localhost:8080/task/f9d4092f-a614-4c58-96f7-8a1e0b564078
 ```
 f9d4092f-a614-4c58-96f7-8a1e0b564078 - id задачи
 
