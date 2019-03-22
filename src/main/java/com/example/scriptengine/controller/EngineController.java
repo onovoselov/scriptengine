@@ -68,7 +68,7 @@ public class EngineController {
      * Returns a task list for a given stage.
      * <i>curl -X GET http://localhost:8080/task?satge=DoneOk</i>
      *
-     * @param stage One of: Pending, InProgress, DoneOk, DoneError, Interrupted,
+     * @param stage One of: Pending, InProgress, DoneOk, DoneError, Interrupted
      * @return List<TaskResult>
      */
     @GetMapping()
@@ -77,7 +77,7 @@ public class EngineController {
     }
 
     /**
-     * Returns a task by its id
+     * Returns task info by id
      * <i>curl -X GET http://localhost:8080/task/f9d4092f-a614-4c58-96f7-8a1e0b564078</>
      *
      * @param id Task id
@@ -89,7 +89,7 @@ public class EngineController {
     }
 
     /**
-     * Terminates a task by its ID
+     * Terminates task by ID
      * <i>curl -X DELETE http://localhost:8080/task/f9d4092f-a614-4c58-96f7-8a1e0b564078</>
      *
      * @param id Task id
