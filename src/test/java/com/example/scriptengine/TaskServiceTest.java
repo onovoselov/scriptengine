@@ -27,7 +27,7 @@ public class TaskServiceTest {
     public void testOkUnblocked() throws InterruptedException {
         TaskService service = new TaskService();
         String id1 = service.runUnblocked(Fixtures.scriptSleep3s, engineLauncher);
-        TimeUnit.SECONDS.sleep(4);
+        TimeUnit.SECONDS.sleep(5);
         TaskResultWidthLog result = service.getTaskResult(id1);
         assertEquals(result.getLog().size(), 2);
         result = service.getTaskResult(id1);
@@ -43,7 +43,7 @@ public class TaskServiceTest {
 
         assertEquals(service.getTasks(TaskStage.InProgress).size(), 3);
         service.interrupt(id1);
-        TimeUnit.MILLISECONDS.sleep(200);
+        TimeUnit.MILLISECONDS.sleep(500);
         assertEquals(service.getTasks(TaskStage.InProgress).size(), 2);
         assertEquals(service.getTasks(TaskStage.Interrupted).size(), 1);
 
