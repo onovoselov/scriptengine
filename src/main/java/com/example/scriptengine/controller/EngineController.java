@@ -31,7 +31,7 @@ public class EngineController {
 
     /**
      * Script execution:
-     * <i>curl -X POST -H "Content-Type: text/plain" -d @SCRIPT_FILE http://localhost:8080/task</i>
+     * <i>curl -X POST -H "Content-Type: text/plain" -d @SCRIPT_FILE http://localhost:8080/task?blocked=1</i>
      *
      * @param script Javascript content
      * @param blocked Blocked mode = 1 (default), Unblocked mode = 0

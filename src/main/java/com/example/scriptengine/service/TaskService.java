@@ -30,7 +30,7 @@ public class TaskService {
     /**
      * Возвращает Runnable задания для последующего запуска
      *
-     * @param script JavaScrip
+     * @param script JavaScrip текст
      * @param engineLauncher EngineLauncher
      * @param scriptOutputWriter  Writer куда будет записываться stdout javascript
      * @return TaskExecutor
@@ -44,7 +44,7 @@ public class TaskService {
     /**
      * Добавляет в пулл задание в котором исполняется Javascript.
      *
-     * @param script JavaScrip
+     * @param script JavaScrip текст
      * @param engineLauncher EngineLauncher
      * @return идентификатор задания
      */

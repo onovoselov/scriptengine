@@ -23,7 +23,7 @@ public class ScriptEngineLauncher implements EngineLauncher {
     /**
      * Выполнение скрипта
      *
-     * @param script тело скрипта
+     * @param script текст скрипта
      * @param stdoutWriter Writer для stdout скрипта
      * @return результат выполнения скрипта
      * @throws IOException если ошибка I/O
@@ -36,7 +36,7 @@ public class ScriptEngineLauncher implements EngineLauncher {
         try {
             engine.eval(script);
         } catch (Throwable e) {
-            stdoutWriter.write( Optional.ofNullable(e.getMessage()).orElseThrow(ThreadInterrupted::new));
+            stdoutWriter.write(Optional.ofNullable(e.getMessage()).orElseThrow(ThreadInterrupted::new));
             return false;
         } finally {
             stdoutWriter.close();
