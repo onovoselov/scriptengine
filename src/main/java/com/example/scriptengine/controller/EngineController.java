@@ -26,7 +26,6 @@ import java.util.concurrent.ForkJoinPool;
 public class EngineController {
     static final Logger logger = LoggerFactory.getLogger(EngineController.class);
 
-
     @Autowired
     TaskService taskService;
 
@@ -53,7 +52,7 @@ public class EngineController {
         if(blocked.orElse(1) == 1) {
             ResponseBodyEmitter emitter = new ResponseBodyEmitter();
             Writer stdoutWriter = new ResponseBodyEmitterWriter(emitter);
-            ForkJoinPool.commonPool().submit(taskService.createTaskExecutor(script, engineLauncher, stdoutWriter));
+            ForkJoinPool.commonPool().submit(taskService.getTaskExecutor(script, engineLauncher, stdoutWriter));
             return new ResponseEntity(emitter, HttpStatus.OK);
         } else {
             String taskId = taskService.runUnblocked(script, engineLauncher);

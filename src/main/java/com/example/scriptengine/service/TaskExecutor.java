@@ -17,12 +17,14 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Задача в которой происходит выполнение Javascript и хранеие всей связанной с этим информацией
+ */
 public class TaskExecutor implements Runnable {
-    static final Logger logger = LoggerFactory.getLogger(EngineController.class);
+    static final private Logger logger = LoggerFactory.getLogger(EngineController.class);
 
     private EngineLauncher engineLauncher;
     private Writer scriptOutputWriter;
-
     private String taskId;
     private String scriptContent;
     private TaskStage stage;
@@ -32,17 +34,26 @@ public class TaskExecutor implements Runnable {
     private CompletableFuture<Void> future;
     private WeakReference<Thread> thread;
 
-    public TaskExecutor(String scriptContent, EngineLauncher engineLauncher) {
+    /**
+     * @param scriptContent Javascript
+     * @param engineLauncher EngineLauncher - исполнитель скрипта
+     */
+    TaskExecutor(String scriptContent, EngineLauncher engineLauncher) {
         init(scriptContent, engineLauncher);
         this.engineLauncher = engineLauncher;
     }
 
-    public TaskExecutor(String scriptContent, EngineLauncher engineLauncher, Writer scriptOutputWriter) {
+    /**
+     * @param scriptContent JavaScrip
+     * @param engineLauncher EngineLauncher - исполнитель скрипта
+     * @param scriptOutputWriter Writer куда будет записываться stdout javascript
+     */
+    TaskExecutor(String scriptContent, EngineLauncher engineLauncher, Writer scriptOutputWriter) {
         this(scriptContent, engineLauncher);
         this.scriptOutputWriter = scriptOutputWriter;
     }
 
-    public void init(String scriptContent, EngineLauncher engineLauncher) {
+    private void init(String scriptContent, EngineLauncher engineLauncher) {
         this.taskId = generateId();
         this.scriptContent = scriptContent;
         this.stage = TaskStage.Pending;
@@ -140,10 +151,6 @@ public class TaskExecutor implements Runnable {
 
     public TaskLogList getTaskLogList() {
         return taskLogList;
-    }
-
-    CompletableFuture<Void> getFuture() {
-        return future;
     }
 
     void setFuture(CompletableFuture<Void> future) {

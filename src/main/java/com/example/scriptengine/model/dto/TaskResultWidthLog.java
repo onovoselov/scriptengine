@@ -6,6 +6,9 @@ import com.example.scriptengine.service.TaskExecutor;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Для вывода состояния и результатов работы скрипта
+ */
 public class TaskResultWidthLog extends TaskResult {
     private List<TaskLog> log;
 

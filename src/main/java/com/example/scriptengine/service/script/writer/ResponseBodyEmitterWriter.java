@@ -6,6 +6,9 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter
 import java.io.IOException;
 import java.io.Writer;
 
+/**
+ * Writer для вывода в ResponseBodyEmitter
+ */
 public class ResponseBodyEmitterWriter extends Writer {
 
     final private ResponseBodyEmitter emitter;

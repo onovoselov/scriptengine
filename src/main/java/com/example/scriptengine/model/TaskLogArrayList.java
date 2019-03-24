@@ -2,8 +2,10 @@ package com.example.scriptengine.model;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * Реализация хранения списка TaskLog в ArrayList
+ */
 public class TaskLogArrayList implements TaskLogList {
     final private List<TaskLog> taskLogList;
 

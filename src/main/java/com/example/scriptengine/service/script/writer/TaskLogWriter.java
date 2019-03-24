@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.io.Writer;
 import java.time.LocalDateTime;
 
+/**
+ * Writer для вывода в TaskLogList
+ */
 public class TaskLogWriter extends Writer {
     final private TaskLogList logList;
 

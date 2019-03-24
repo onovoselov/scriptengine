@@ -9,6 +9,9 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Optional;
 
+/**
+ * Обертка над javax.script.ScriptEngine для запуска скрипта
+ */
 public class ScriptEngineLauncher implements EngineLauncher {
     private ScriptEngine engine;
 
@@ -17,6 +20,14 @@ public class ScriptEngineLauncher implements EngineLauncher {
         this.engine = manager.getEngineByName("JavaScript");
     }
 
+    /**
+     * Выполнение скрипта
+     *
+     * @param script тело скрипта
+     * @param stdoutWriter Writer для stdout скрипта
+     * @return результат выполнения скрипта
+     * @throws IOException если ошибка I/O
+     */
     @Override
     public boolean launch(String script, Writer stdoutWriter) throws IOException {
         ScriptContext context = engine.getContext();

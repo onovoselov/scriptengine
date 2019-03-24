@@ -7,6 +7,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Для вывода состояния работы скрипта
+ */
 public class TaskResult {
     private String id;
     private TaskStage stage;
