@@ -19,9 +19,7 @@ public class ResponseBodyEmitterWriter extends Writer {
 
     @Override
     public void write(char[] cbuf, int off, int len) throws IOException {
-        if (cbuf != null && len > 0 && cbuf[0] != '\r' && cbuf[0] != '\n') {
-            emitter.send(String.valueOf(cbuf, off, len), MediaType.TEXT_PLAIN);
-        }
+        emitter.send(String.valueOf(cbuf, off, len), MediaType.TEXT_PLAIN);
     }
 
     @Override
