@@ -1,8 +1,7 @@
 package com.example.scriptengine;
 
 public class Fixtures {
-    public static String script1 =
-            "print('Hello ScriptEngine!!!!');";
+    public static String script1 = "print('Hello ScriptEngine!!!!');";
 
     public static String scriptSleep3s =
             "function sleepFor( sleepDuration ){\n" +

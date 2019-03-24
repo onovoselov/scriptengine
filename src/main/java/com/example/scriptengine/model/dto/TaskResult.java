@@ -1,22 +1,30 @@
 package com.example.scriptengine.model.dto;
 
-import com.example.scriptengine.model.Task;
 import com.example.scriptengine.model.TaskStage;
+import com.example.scriptengine.service.TaskExecutor;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TaskResult {
     private String id;
     private TaskStage stage;
-    private long startTime;
-    private long stopTime;
+    private LocalDateTime startTime;
+    private LocalDateTime stopTime;
+    private List<TaskLink> links;
 
     public TaskResult() {
+        this.links = new ArrayList<>();
     }
 
-    public TaskResult(Task task) {
-        this.id = task.getId();
-        this.stage = task.getStage();
-        this.startTime = task.getStartTime();
-        this.stopTime = task.getStopTime();
+    public TaskResult(TaskExecutor taskExecutor) {
+        this();
+        this.id = taskExecutor.getTaskId();
+        this.stage = taskExecutor.getStage();
+        this.startTime = taskExecutor.getStartTime();
+        this.stopTime = taskExecutor.getStopTime();
+        links.add(new TaskLink("/task/" + this.id, "self"));
     }
 
     public String getId() {
@@ -27,11 +35,15 @@ public class TaskResult {
         return stage;
     }
 
-    public long getStartTime() {
+    public LocalDateTime getStartTime() {
         return startTime;
     }
 
-    public long getStopTime() {
+    public LocalDateTime getStopTime() {
         return stopTime;
+    }
+
+    public List<TaskLink> getLinks() {
+        return links;
     }
 }

@@ -1,13 +1,13 @@
 package com.example.scriptengine.service;
 
 import com.example.scriptengine.exceptions.NotFoundException;
-import com.example.scriptengine.model.Task;
 import com.example.scriptengine.model.TaskStage;
 import com.example.scriptengine.model.dto.TaskResult;
 import com.example.scriptengine.model.dto.TaskResultWidthLog;
 import com.example.scriptengine.service.script.EngineLauncher;
 import org.springframework.stereotype.Service;
 
+import java.io.Writer;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
@@ -17,55 +17,37 @@ import java.util.stream.Collectors;
 public class TaskService {
     final private static int NUM_TREADS = 10;
     final private ExecutorService executorService;
-    final private Map<String, Task> tasks;
-    private EngineLauncher engineLauncher;
+    final private Map<String, TaskExecutor> tasks;
 
-    public TaskService(EngineLauncher engineLauncher) {
-        this.engineLauncher = engineLauncher;
+    public TaskService() {
         this.executorService = Executors.newFixedThreadPool(NUM_TREADS);
         this.tasks = new ConcurrentHashMap<>();
     }
 
-    public TaskResult run(Task task, boolean blocked) {
-        TaskExecutor taskExecutor = new TaskExecutor(task, engineLauncher);
-        CompletableFuture future = CompletableFuture.runAsync(taskExecutor, executorService);
-        task.setFuture(future);
-        tasks.put(task.getId(), task);
-
-        if(blocked) {
-            try {
-                future.get();
-            } catch (InterruptedException e) {
-                task.interrupted();
-            } catch (ExecutionException e) {
-                task.error();
-                e.printStackTrace();
-            }
-
-            return new TaskResultWidthLog(task);
-        }
-
-        return new TaskResult(task);
+    public Runnable createTaskExecutor(String script, EngineLauncher engineLauncher, Writer writer) {
+        TaskExecutor taskExecutor = new TaskExecutor(script, engineLauncher, writer);
+        tasks.put(taskExecutor.getTaskId(), taskExecutor);
+        return taskExecutor;
     }
 
-    public TaskResult run(String script, boolean blocked) {
-        Task task = new Task(script);
-        return run(task, blocked);
+    public String runUnblocked(String script, EngineLauncher engineLauncher) {
+        TaskExecutor taskExecutor = new TaskExecutor(script, engineLauncher);
+        tasks.put(taskExecutor.getTaskId(), taskExecutor);
+        CompletableFuture<Void> future = CompletableFuture.runAsync(taskExecutor, executorService);
+        taskExecutor.setFuture(future);
+
+        return taskExecutor.getTaskId();
     }
 
-    public boolean interrupt(String taskId) {
-        Thread thread = getThreadByName(taskId);
-        if(thread != null) {
+    public void interrupt(String taskId) {
+        TaskExecutor task = getTaskById(taskId);
+        Thread thread = task.getThread().get();
+        if(task.getStage() == TaskStage.InProgress && thread != null) {
+            task.interrupt();
             thread.stop();
+        } else {
+            task.cancel();
         }
-
-        return true;
-    }
-
-    private Task getTaskById(String taskId) {
-        return tasks.computeIfAbsent(taskId, t -> {
-            throw new NotFoundException();
-        });
     }
 
     public List<TaskResult> getTasks(TaskStage stage) {
@@ -75,14 +57,16 @@ public class TaskService {
                 .collect(Collectors.toList());
     }
 
-    private Thread getThreadByName(String threadName) {
-        for (Thread t : Thread.getAllStackTraces().keySet()) {
-            if (t.getName().equals(threadName)) {
-                return t;
-            }
-        }
+    public List<TaskResult> getTasks() {
+        return tasks.values().stream()
+                .map(TaskResult::new)
+                .collect(Collectors.toList());
+    }
 
-        return null;
+    private TaskExecutor getTaskById(String taskId) {
+        return tasks.computeIfAbsent(taskId, t -> {
+            throw new NotFoundException("Task not found.");
+        });
     }
 
     public TaskResultWidthLog getTaskResult(String id) {

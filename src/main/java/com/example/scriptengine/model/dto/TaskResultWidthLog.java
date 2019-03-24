@@ -1,7 +1,7 @@
 package com.example.scriptengine.model.dto;
 
-import com.example.scriptengine.model.Task;
 import com.example.scriptengine.model.TaskLog;
+import com.example.scriptengine.service.TaskExecutor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +13,7 @@ public class TaskResultWidthLog extends TaskResult {
         this.log = new ArrayList<>();
     }
 
-    public TaskResultWidthLog(Task task) {
+    public TaskResultWidthLog(TaskExecutor task) {
         super(task);
         this.log = task.getTaskLogList().getAndDeleteItems();
     }

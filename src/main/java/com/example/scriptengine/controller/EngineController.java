@@ -1,22 +1,22 @@
 package com.example.scriptengine.controller;
 
-import com.example.scriptengine.exceptions.NotFoundException;
-import com.example.scriptengine.model.Task;
-import com.example.scriptengine.model.TaskLog;
 import com.example.scriptengine.model.dto.TaskResult;
-import com.example.scriptengine.model.dto.TaskResultWidthLog;
-import com.example.scriptengine.model.dto.TaskStart;
 import com.example.scriptengine.service.TaskService;
+import com.example.scriptengine.service.script.ScriptEngineLauncher;
+import com.example.scriptengine.service.script.writer.ResponseBodyEmitterWriter;
 import com.example.scriptengine.util.Converters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.async.DeferredResult;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ForkJoinPool;
@@ -24,44 +24,42 @@ import java.util.concurrent.ForkJoinPool;
 @RestController
 @RequestMapping("task")
 public class EngineController {
+    static final Logger logger = LoggerFactory.getLogger(EngineController.class);
+
 
     @Autowired
     TaskService taskService;
 
     /**
      * Script execution:
-     * <i>curl -X POST -H "Content-Type: application/json" -d @FILE_TASK_START_JSON http://localhost:8080/task</i>
-     * FILE_TASK_START_JSON - File with json string. Example: {"script":"print()","blocked":false}
+     * <i>curl -X POST -H "Content-Type: text/plain" -d @SCRIPT_FILE http://localhost:8080/task</i>
      *
-     * @param taskStart TaskStart
+     * @param script Javascript content
+     * @param blocked Blocked mode = 1 (default), Unblocked mode = 0
      * @param uriComponentsBuilder UriComponentsBuilder
-     * @return DeferredResult
-     * Blocked mode: return TaskResult
+     * @param engineLauncher EngineLauncher
+     * @return
+     * Blocked mode: Returns script output
      * Unblocked mode:
      * HTTP/1.1 201 Created
      * Location: /task/f9d4092f-a614-4c58-96f7-8a1e0b564078
      */
-    @PostMapping
-    public DeferredResult<ResponseEntity<?>> newTask(@RequestBody TaskStart taskStart,
-                                                     UriComponentsBuilder uriComponentsBuilder) {
-        DeferredResult<ResponseEntity<?>> deferredResult = new DeferredResult<>();
-        if(taskStart.isBlocked()) {   // Blocked mode
-            ForkJoinPool.commonPool().submit(() -> {
-                TaskResult result = taskService.run(taskStart.getScript(), true);
-                ResponseEntity<TaskResult> responseEntity =
-                        new ResponseEntity<>(result, HttpStatus.OK);
-                deferredResult.setResult(responseEntity);
-            });
-        } else {  // Unblocked mode
-            TaskResult result = taskService.run(taskStart.getScript(), false);
-            HttpHeaders headers = new HttpHeaders();
-            UriComponents uriComponents = uriComponentsBuilder.path("/task/{id}").buildAndExpand(result.getId());
-            headers.setLocation(uriComponents.toUri());
-            ResponseEntity<Void> responseEntity = new ResponseEntity<>(headers, HttpStatus.CREATED);
-            deferredResult.setResult(responseEntity);
-        }
+    @PostMapping()
+    public ResponseEntity<ResponseBodyEmitter> newTask(@RequestBody String script,
+                                                       @RequestParam("blocked") Optional<Integer> blocked,
+                                                       UriComponentsBuilder uriComponentsBuilder,
+                                                       ScriptEngineLauncher engineLauncher) throws IOException {
 
-        return deferredResult;
+        if(blocked.orElse(1) == 1) {
+            ResponseBodyEmitter emitter = new ResponseBodyEmitter();
+            Writer stdoutWriter = new ResponseBodyEmitterWriter(emitter);
+            ForkJoinPool.commonPool().submit(taskService.createTaskExecutor(script, engineLauncher, stdoutWriter));
+            return new ResponseEntity(emitter, HttpStatus.OK);
+        } else {
+            String taskId = taskService.runUnblocked(script, engineLauncher);
+            UriComponents uriTask = uriComponentsBuilder.path("/task/{id}").buildAndExpand(taskId);
+            return ResponseEntity.created(uriTask.toUri()).build();
+        }
     }
 
     /**
@@ -73,7 +71,11 @@ public class EngineController {
      */
     @GetMapping()
     public List<TaskResult> tasks(@RequestParam("stage") Optional<String> stage) {
-        return taskService.getTasks(Converters.stringToTaskStage(stage.orElse("InProgress")));
+        if(stage.isPresent()) {
+            return taskService.getTasks(Converters.stringToTaskStage(stage.get()));
+        } else {
+            return taskService.getTasks();
+        }
     }
 
     /**
@@ -84,7 +86,7 @@ public class EngineController {
      * @return TaskResultWidthLog
      */
     @GetMapping("{id}")
-    public TaskResultWidthLog task(@PathVariable String id) {
+    public TaskResult task(@PathVariable String id) {
         return taskService.getTaskResult(id);
     }
 

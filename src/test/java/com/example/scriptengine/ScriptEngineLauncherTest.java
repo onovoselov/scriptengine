@@ -1,14 +1,13 @@
 package com.example.scriptengine;
 
-import com.example.scriptengine.config.ScriptEngineConfig;
 import com.example.scriptengine.model.TaskLogArrayList;
 import com.example.scriptengine.model.TaskLogList;
 import com.example.scriptengine.service.script.EngineLauncher;
-import com.example.scriptengine.service.script.ScriptLogWriter;
+import com.example.scriptengine.service.script.ScriptEngineLauncher;
+import com.example.scriptengine.service.script.writer.TaskLogWriter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -20,19 +19,17 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = ScriptEngineConfig.class)
 public class ScriptEngineLauncherTest {
-    private ScriptLogWriter writer = new ScriptLogWriter(new TaskLogArrayList());
+    private TaskLogWriter writer = new TaskLogWriter(new TaskLogArrayList());
     private TaskLogList logList;
     private Writer listStdout;
-
-    @Autowired
-    EngineLauncher engineLauncher;
+    private EngineLauncher engineLauncher;
 
     @Before
     public void setup() throws Exception {
         logList = new TaskLogArrayList();
-        listStdout = new ScriptLogWriter(logList);
+        listStdout = new TaskLogWriter(logList);
+        engineLauncher = new ScriptEngineLauncher();
     }
 
     @Test

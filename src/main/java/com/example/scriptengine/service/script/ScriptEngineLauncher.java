@@ -5,7 +5,6 @@ import com.example.scriptengine.exceptions.ThreadInterrupted;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
-import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Optional;
@@ -26,7 +25,7 @@ public class ScriptEngineLauncher implements EngineLauncher {
         try {
             engine.eval(script);
         } catch (Throwable e) {
-            stdoutWriter.write("Error:" + Optional.ofNullable(e.getMessage()).orElseThrow(ThreadInterrupted::new));
+            stdoutWriter.write( Optional.ofNullable(e.getMessage()).orElseThrow(ThreadInterrupted::new));
             return false;
         } finally {
             stdoutWriter.close();

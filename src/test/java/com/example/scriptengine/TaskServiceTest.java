@@ -1,13 +1,13 @@
 package com.example.scriptengine;
 
-import com.example.scriptengine.config.ScriptEngineConfig;
-import com.example.scriptengine.model.Task;
 import com.example.scriptengine.model.TaskStage;
+import com.example.scriptengine.model.dto.TaskResultWidthLog;
 import com.example.scriptengine.service.TaskService;
 import com.example.scriptengine.service.script.EngineLauncher;
+import com.example.scriptengine.service.script.ScriptEngineLauncher;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -17,27 +17,37 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = ScriptEngineConfig.class)
 public class TaskServiceTest {
+    private EngineLauncher engineLauncher;
 
-    @Autowired
-    EngineLauncher engineLauncher;
+    @Before
+    public void setup() throws Exception {
+        engineLauncher = new ScriptEngineLauncher();
+    }
+
+    @Test
+    public void testOkUnblocked() throws InterruptedException {
+        TaskService service = new TaskService();
+        String id1 = service.runUnblocked(Fixtures.scriptSleep3s, engineLauncher);
+        TimeUnit.SECONDS.sleep(4);
+        TaskResultWidthLog result = service.getTaskResult(id1);
+        assertEquals(result.getLog().size(), 2);
+        result = service.getTaskResult(id1);
+        assertEquals(result.getLog().size(), 0);
+    }
 
     @Test
     public void testInterrupt() throws InterruptedException {
-        TaskService service = new TaskService(engineLauncher);
-        service.run(new Task("1", Fixtures.scriptSleep3s), false);
-        service.run(new Task("2", Fixtures.scriptSleep3s), false);
-        service.run(new Task("3", Fixtures.scriptSleep3s), false);
-        service.run(new Task("4", Fixtures.scriptSleep3s), false);
+        TaskService service = new TaskService();
+        String id1 = service.runUnblocked(Fixtures.scriptSleep3s, engineLauncher);
+        service.runUnblocked(Fixtures.scriptSleep3s, engineLauncher);
+        service.runUnblocked(Fixtures.scriptSleep3s, engineLauncher);
 
-        assertEquals(service.getTasks(TaskStage.InProgress).size(), 4);
-        TimeUnit.MILLISECONDS.sleep(500);
-        assertTrue(service.interrupt("1"));
-        assertTrue(service.interrupt("4"));
-        TimeUnit.MILLISECONDS.sleep(500);
+        assertEquals(service.getTasks(TaskStage.InProgress).size(), 3);
+        service.interrupt(id1);
+        TimeUnit.MILLISECONDS.sleep(200);
         assertEquals(service.getTasks(TaskStage.InProgress).size(), 2);
-        assertEquals(service.getTasks(TaskStage.Interrupted).size(), 2);
+        assertEquals(service.getTasks(TaskStage.Interrupted).size(), 1);
 
         TimeUnit.SECONDS.sleep(3);
     }

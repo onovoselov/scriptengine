@@ -1,4 +1,4 @@
-package com.example.scriptengine.service.script;
+package com.example.scriptengine.service.script.writer;
 
 import com.example.scriptengine.model.TaskLog;
 import com.example.scriptengine.model.TaskLogList;
@@ -7,10 +7,10 @@ import java.io.IOException;
 import java.io.Writer;
 import java.time.LocalDateTime;
 
-public class ScriptLogWriter extends Writer {
+public class TaskLogWriter extends Writer {
     final private TaskLogList logList;
 
-    public ScriptLogWriter(TaskLogList logList) {
+    public TaskLogWriter(TaskLogList logList) {
         this.logList = logList;
     }
 
