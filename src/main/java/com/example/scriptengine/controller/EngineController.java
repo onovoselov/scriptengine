@@ -33,12 +33,11 @@ public class EngineController {
      * Script execution:
      * <i>curl -X POST -H "Content-Type: text/plain" -d @SCRIPT_FILE http://localhost:8080/task?blocked=1</i>
      *
-     * @param script Javascript content
-     * @param blocked Blocked mode = 1 (default), Unblocked mode = 0
+     * @param script               Javascript content
+     * @param blocked              Blocked mode = 1 (default), Unblocked mode = 0
      * @param uriComponentsBuilder UriComponentsBuilder
-     * @param engineLauncher EngineLauncher
-     * @return
-     * Blocked mode: Returns script output
+     * @param engineLauncher       EngineLauncher
+     * @return Blocked mode: Returns script output
      * Unblocked mode:
      * HTTP/1.1 201 Created
      * Location: /task/f9d4092f-a614-4c58-96f7-8a1e0b564078
@@ -49,7 +48,7 @@ public class EngineController {
                                                        UriComponentsBuilder uriComponentsBuilder,
                                                        ScriptEngineLauncher engineLauncher) throws IOException {
 
-        if(blocked.orElse(1) == 1) {
+        if (blocked.orElse(1) == 1) {
             ResponseBodyEmitter emitter = new ResponseBodyEmitter();
             Writer stdoutWriter = new ResponseBodyEmitterWriter(emitter);
             ForkJoinPool.commonPool().submit(taskService.getTaskExecutor(script, engineLauncher, stdoutWriter));
@@ -70,7 +69,7 @@ public class EngineController {
      */
     @GetMapping()
     public List<TaskResult> tasks(@RequestParam("stage") Optional<String> stage) {
-        if(stage.isPresent()) {
+        if (stage.isPresent()) {
             return taskService.getTasks(Converters.stringToTaskStage(stage.get()));
         } else {
             return taskService.getTasks();

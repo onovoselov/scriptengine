@@ -23,7 +23,7 @@ public class ScriptEngineLauncher implements EngineLauncher {
     /**
      * Выполнение скрипта
      *
-     * @param script текст скрипта
+     * @param script       текст скрипта
      * @param stdoutWriter Writer для stdout скрипта
      * @return результат выполнения скрипта
      * @throws IOException если ошибка I/O

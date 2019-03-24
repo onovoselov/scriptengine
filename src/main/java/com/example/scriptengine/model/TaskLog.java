@@ -11,7 +11,7 @@ public class TaskLog {
 
     /**
      * @param dateTime время сообщения
-     * @param message тект сообщения
+     * @param message  тект сообщения
      */
     public TaskLog(LocalDateTime dateTime, String message) {
         this.dateTime = dateTime;

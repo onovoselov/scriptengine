@@ -34,7 +34,7 @@ public class EngineRestControllerTest {
         mockMvc.perform(post("/task").
                 contentType(MediaType.TEXT_HTML).content(Fixtures.script1)
         )
-        .andExpect(status().isOk());
+                .andExpect(status().isOk());
     }
 
     @Test

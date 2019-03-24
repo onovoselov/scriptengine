@@ -30,9 +30,9 @@ public class TaskService {
     /**
      * Возвращает Runnable задания для последующего запуска
      *
-     * @param script JavaScrip текст
-     * @param engineLauncher EngineLauncher
-     * @param scriptOutputWriter  Writer куда будет записываться stdout javascript
+     * @param script             JavaScrip текст
+     * @param engineLauncher     EngineLauncher
+     * @param scriptOutputWriter Writer куда будет записываться stdout javascript
      * @return TaskExecutor
      */
     public TaskExecutor getTaskExecutor(String script, EngineLauncher engineLauncher, Writer scriptOutputWriter) {
@@ -44,7 +44,7 @@ public class TaskService {
     /**
      * Добавляет в пулл задание в котором исполняется Javascript.
      *
-     * @param script JavaScrip текст
+     * @param script         JavaScrip текст
      * @param engineLauncher EngineLauncher
      * @return идентификатор задания
      */
@@ -65,7 +65,7 @@ public class TaskService {
     public void interrupt(String taskId) {
         TaskExecutor task = getTaskById(taskId);
         Thread thread = task.getThread().get();
-        if(task.getStage() == TaskStage.InProgress && thread != null) {
+        if (task.getStage() == TaskStage.InProgress && thread != null) {
             task.interrupt();
             thread.stop();
         } else {
@@ -107,7 +107,7 @@ public class TaskService {
         return new TaskResultWidthLog(getTaskById(taskId));
     }
 
-    private TaskExecutor getTaskById(String taskId)  {
+    private TaskExecutor getTaskById(String taskId) {
         return tasks.computeIfAbsent(taskId, t -> {
             throw new NotFoundException("Task not found.");
         });

@@ -28,14 +28,14 @@ public class TaskExecutor implements Runnable {
     private String taskId;
     private String scriptContent;
     private TaskStage stage;
-    private LocalDateTime  startTime;
-    private LocalDateTime  stopTime;
+    private LocalDateTime startTime;
+    private LocalDateTime stopTime;
     private TaskLogList taskLogList;
     private CompletableFuture<Void> future;
     private WeakReference<Thread> thread;
 
     /**
-     * @param scriptContent Javascript
+     * @param scriptContent  Javascript
      * @param engineLauncher EngineLauncher - исполнитель скрипта
      */
     TaskExecutor(String scriptContent, EngineLauncher engineLauncher) {
@@ -44,8 +44,8 @@ public class TaskExecutor implements Runnable {
     }
 
     /**
-     * @param scriptContent JavaScrip
-     * @param engineLauncher EngineLauncher - исполнитель скрипта
+     * @param scriptContent      JavaScrip
+     * @param engineLauncher     EngineLauncher - исполнитель скрипта
      * @param scriptOutputWriter Writer куда будет записываться stdout javascript
      */
     TaskExecutor(String scriptContent, EngineLauncher engineLauncher, Writer scriptOutputWriter) {
@@ -69,7 +69,7 @@ public class TaskExecutor implements Runnable {
         thread = new WeakReference<>(currentThread);
         started();
         try {
-            if(engineLauncher.launch(scriptContent, scriptOutputWriter)) {
+            if (engineLauncher.launch(scriptContent, scriptOutputWriter)) {
                 stopped();
             } else {
                 error();
@@ -89,7 +89,7 @@ public class TaskExecutor implements Runnable {
 
     private static String generateId() {
         String guid = UUID.randomUUID().toString();
-        return  guid.substring(1, guid.length() - 2);
+        return guid.substring(1, guid.length() - 2);
     }
 
     private synchronized void started() {
@@ -121,7 +121,7 @@ public class TaskExecutor implements Runnable {
     }
 
     void cancel() {
-        if(stage == TaskStage.Pending) {
+        if (stage == TaskStage.Pending) {
             future.cancel(true);
             interrupted();
         }
