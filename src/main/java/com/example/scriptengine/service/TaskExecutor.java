@@ -160,4 +160,8 @@ public class TaskExecutor implements Runnable {
     WeakReference<Thread> getThread() {
         return thread;
     }
+
+    public CompletableFuture<Void> getFuture() {
+        return future;
+    }
 }

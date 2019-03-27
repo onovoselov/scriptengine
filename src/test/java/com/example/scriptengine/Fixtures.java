@@ -8,7 +8,7 @@ public class Fixtures {
                     "    var now = new Date().getTime();\n" +
                     "    while(new Date().getTime() < now + sleepDuration){ /* do nothing */ }\n" +
                     "};\n" +
-                    "print('Start sleep 4 sec');\n" +
-                    "sleepFor(4000);\n" +
+                    "print('Start sleep 3 sec');\n" +
+                    "sleepFor(3000);\n" +
                     "print('End sleep');\n";
 }

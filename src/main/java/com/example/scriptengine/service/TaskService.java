@@ -107,7 +107,7 @@ public class TaskService {
         return new TaskResultWidthLog(getTaskById(taskId));
     }
 
-    private TaskExecutor getTaskById(String taskId) {
+    public TaskExecutor getTaskById(String taskId) {
         return tasks.computeIfAbsent(taskId, t -> {
             throw new NotFoundException("Task not found.");
         });
