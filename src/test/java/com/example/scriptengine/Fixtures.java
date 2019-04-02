@@ -11,4 +11,6 @@ public class Fixtures {
                     "print('Start sleep 3 sec');\n" +
                     "sleepFor(3000);\n" +
                     "print('End sleep');\n";
+
+    public static String scriptError = "for(var i=0; i<10; i++) { print('Script 1'); java.lang.Thread.sleep(1000);";
 }

@@ -1,5 +1,6 @@
 package com.example.scriptengine.controller;
 
+import com.example.scriptengine.exceptions.ScriptCompileException;
 import com.example.scriptengine.model.dto.TaskResult;
 import com.example.scriptengine.service.TaskService;
 import com.example.scriptengine.service.script.ScriptEngineLauncher;
@@ -20,6 +21,7 @@ import java.io.Writer;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
 
 @RestController
 @RequestMapping("task")
@@ -36,7 +38,6 @@ public class EngineController {
      * @param script               Javascript content
      * @param blocked              Blocked mode = 1 (default), Unblocked mode = 0
      * @param uriComponentsBuilder UriComponentsBuilder
-     * @param engineLauncher       EngineLauncher
      * @return Blocked mode: Returns script output
      * Unblocked mode:
      * HTTP/1.1 201 Created
@@ -45,16 +46,15 @@ public class EngineController {
     @PostMapping()
     public ResponseEntity<ResponseBodyEmitter> newTask(@RequestBody String script,
                                                        @RequestParam("blocked") Optional<Integer> blocked,
-                                                       UriComponentsBuilder uriComponentsBuilder,
-                                                       ScriptEngineLauncher engineLauncher) throws IOException {
+                                                       UriComponentsBuilder uriComponentsBuilder) throws IOException, ScriptCompileException {
 
         if (blocked.orElse(1) == 1) {
             ResponseBodyEmitter emitter = new ResponseBodyEmitter();
             Writer stdoutWriter = new ResponseBodyEmitterWriter(emitter);
-            ForkJoinPool.commonPool().submit(taskService.getTaskExecutor(script, engineLauncher, stdoutWriter));
+            new Thread(taskService.getTaskExecutor(script, stdoutWriter)).start();
             return new ResponseEntity(emitter, HttpStatus.OK);
         } else {
-            String taskId = taskService.runUnblocked(script, engineLauncher);
+            String taskId = taskService.runUnblocked(script);
             UriComponents uriTask = uriComponentsBuilder.path("/task/{id}").buildAndExpand(taskId);
             return ResponseEntity.created(uriTask.toUri()).build();
         }

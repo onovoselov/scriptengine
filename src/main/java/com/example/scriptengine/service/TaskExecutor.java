@@ -14,19 +14,19 @@ import java.io.IOException;
 import java.io.Writer;
 import java.lang.ref.WeakReference;
 import java.time.LocalDateTime;
+import java.util.Observable;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 /**
  * Задача в которой происходит выполнение Javascript и хранеие всей связанной с этим информацией
  */
-public class TaskExecutor implements Runnable {
+public class TaskExecutor extends Observable implements Runnable {
     static final private Logger logger = LoggerFactory.getLogger(EngineController.class);
 
     private EngineLauncher engineLauncher;
     private Writer scriptOutputWriter;
     private String taskId;
-    private String scriptContent;
     private TaskStage stage;
     private LocalDateTime startTime;
     private LocalDateTime stopTime;
@@ -35,28 +35,25 @@ public class TaskExecutor implements Runnable {
     private WeakReference<Thread> thread;
 
     /**
-     * @param scriptContent  Javascript
      * @param engineLauncher EngineLauncher - исполнитель скрипта
      */
-    TaskExecutor(String scriptContent, EngineLauncher engineLauncher) {
-        init(scriptContent, engineLauncher);
+    TaskExecutor(EngineLauncher engineLauncher) {
+        init(engineLauncher);
         this.engineLauncher = engineLauncher;
     }
 
     /**
-     * @param scriptContent      JavaScrip
      * @param engineLauncher     EngineLauncher - исполнитель скрипта
      * @param scriptOutputWriter Writer куда будет записываться stdout javascript
      */
-    TaskExecutor(String scriptContent, EngineLauncher engineLauncher, Writer scriptOutputWriter) {
-        this(scriptContent, engineLauncher);
+    TaskExecutor(EngineLauncher engineLauncher, Writer scriptOutputWriter) {
+        this(engineLauncher);
         this.scriptOutputWriter = scriptOutputWriter;
     }
 
-    private void init(String scriptContent, EngineLauncher engineLauncher) {
+    private void init(EngineLauncher engineLauncher) {
         this.taskId = generateId();
-        this.scriptContent = scriptContent;
-        this.stage = TaskStage.Pending;
+        changeStage(TaskStage.Pending);
         this.engineLauncher = engineLauncher;
         this.taskLogList = new TaskLogArrayList();
         this.scriptOutputWriter = new TaskLogWriter(this.taskLogList);
@@ -69,7 +66,7 @@ public class TaskExecutor implements Runnable {
         thread = new WeakReference<>(currentThread);
         started();
         try {
-            if (engineLauncher.launch(scriptContent, scriptOutputWriter)) {
+            if (engineLauncher.launch(scriptOutputWriter)) {
                 stopped();
             } else {
                 error();
@@ -93,19 +90,19 @@ public class TaskExecutor implements Runnable {
     }
 
     private synchronized void started() {
-        stage = TaskStage.InProgress;
+        changeStage(TaskStage.InProgress);
         startTime = LocalDateTime.now();
         logger.info("STARTED: " + taskId);
     }
 
     private synchronized void stopped() {
-        stage = TaskStage.DoneOk;
+        changeStage(TaskStage.DoneOk);
         stopTime = LocalDateTime.now();
         logger.info("STOPPED: " + taskId);
     }
 
     private synchronized void error() {
-        stage = TaskStage.DoneError;
+        changeStage(TaskStage.DoneError);
         stopTime = LocalDateTime.now();
         logger.info("ERROR: " + taskId);
     }
@@ -128,9 +125,15 @@ public class TaskExecutor implements Runnable {
     }
 
     private synchronized void interrupted() {
-        stage = TaskStage.Interrupted;
+        changeStage(TaskStage.Interrupted);
         stopTime = LocalDateTime.now();
         logger.info("INTERRUPTED: " + taskId);
+    }
+
+    private void changeStage(TaskStage stage) {
+        this.stage = stage;
+        setChanged();
+        notifyObservers(stage);
     }
 
     public TaskStage getStage() {

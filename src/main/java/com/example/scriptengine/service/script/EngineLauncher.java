@@ -4,5 +4,5 @@ import java.io.IOException;
 import java.io.Writer;
 
 public interface EngineLauncher {
-    boolean launch(String script, Writer stdoutWriter) throws IOException;
+    boolean launch(Writer stdoutWriter) throws IOException;
 }

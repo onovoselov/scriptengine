@@ -1,5 +1,7 @@
 package com.example.scriptengine.service.script.writer;
 
+import com.example.scriptengine.exceptions.ThreadInterrupted;
+import org.apache.catalina.connector.ClientAbortException;
 import org.springframework.http.MediaType;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 
@@ -7,7 +9,7 @@ import java.io.IOException;
 import java.io.Writer;
 
 /**
- * Writer для вывода в ResponseBodyEmitter
+ * Writer for ResponseBodyEmitter
  */
 public class ResponseBodyEmitterWriter extends Writer {
 
@@ -19,7 +21,11 @@ public class ResponseBodyEmitterWriter extends Writer {
 
     @Override
     public void write(char[] cbuf, int off, int len) throws IOException {
-        emitter.send(String.valueOf(cbuf, off, len), MediaType.TEXT_PLAIN);
+        try {
+            emitter.send(String.valueOf(cbuf, off, len), MediaType.TEXT_PLAIN);
+        } catch (ClientAbortException e) {
+            throw new ThreadInterrupted("Interrupted by user");
+        }
     }
 
     @Override

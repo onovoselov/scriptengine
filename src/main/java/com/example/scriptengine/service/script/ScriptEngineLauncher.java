@@ -1,10 +1,9 @@
 package com.example.scriptengine.service.script;
 
+import com.example.scriptengine.exceptions.ScriptCompileException;
 import com.example.scriptengine.exceptions.ThreadInterrupted;
 
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
+import javax.script.*;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Optional;
@@ -13,28 +12,42 @@ import java.util.Optional;
  * Обертка над javax.script.ScriptEngine для запуска скрипта
  */
 public class ScriptEngineLauncher implements EngineLauncher {
-    private ScriptEngine engine;
+    final private ScriptEngine engine;
+    final private String scriptBody;
+    private CompiledScript compiledScript;
 
-    public ScriptEngineLauncher() {
-        ScriptEngineManager manager = new ScriptEngineManager();
-        this.engine = manager.getEngineByName("JavaScript");
+    public ScriptEngineLauncher(String scriptBody, ScriptEngine engine) throws ScriptCompileException {
+        this.scriptBody = scriptBody;
+        this.engine = engine;
+        compile();
+    }
+
+
+    private void compile() throws ScriptCompileException {
+        Compilable compilable = (Compilable) engine;
+        try {
+            compiledScript = compilable.compile(scriptBody);
+        } catch (ScriptException e) {
+            throw new ScriptCompileException(e.getMessage());
+        }
     }
 
     /**
      * Выполнение скрипта
      *
-     * @param script       текст скрипта
      * @param stdoutWriter Writer для stdout скрипта
      * @return результат выполнения скрипта
      * @throws IOException если ошибка I/O
      */
     @Override
-    public boolean launch(String script, Writer stdoutWriter) throws IOException {
-        ScriptContext context = engine.getContext();
+    public boolean launch(Writer stdoutWriter) throws IOException {
+        ScriptContext context = new SimpleScriptContext();
         context.setWriter(stdoutWriter);
 
         try {
-            engine.eval(script);
+            compiledScript.eval(context);
+        } catch (ThreadInterrupted e) {
+            throw e;
         } catch (Throwable e) {
             stdoutWriter.write(Optional.ofNullable(e.getMessage()).orElseThrow(ThreadInterrupted::new));
             return false;
