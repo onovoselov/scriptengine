@@ -169,4 +169,8 @@ public class TaskExecutor extends Observable implements Runnable {
     public CompletableFuture<Void> getFuture() {
         return future;
     }
+
+    EngineLauncher getEngineLauncher() {
+        return engineLauncher;
+    }
 }

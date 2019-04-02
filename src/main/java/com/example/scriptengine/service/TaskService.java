@@ -2,6 +2,8 @@ package com.example.scriptengine.service;
 
 import com.example.scriptengine.exceptions.NotFoundException;
 import com.example.scriptengine.exceptions.ScriptCompileException;
+import com.example.scriptengine.model.TaskLog;
+import com.example.scriptengine.model.TaskLogList;
 import com.example.scriptengine.model.TaskStage;
 import com.example.scriptengine.model.dto.TaskResult;
 import com.example.scriptengine.model.dto.TaskResultWidthLog;
@@ -28,10 +30,10 @@ public class TaskService {
     final private ScriptEngine engine;
 
 
-    public TaskService() {
+    public TaskService(ScriptEngine engine) {
         this.executorService = Executors.newFixedThreadPool(NUM_TREADS);
         this.tasks = new ConcurrentHashMap<>();
-        this.engine = new ScriptEngineManager().getEngineByName("Nashorn");
+        this.engine = engine;
     }
 
     /**
@@ -92,6 +94,27 @@ public class TaskService {
         }
     }
 
+
+    /**
+     * Return script body
+     *
+     * @param taskId Task Id
+     * @return Script body
+     */
+    public String getTaskScriptBody(String taskId) {
+        TaskExecutor task = getTaskById(taskId);
+        return task.getEngineLauncher().getScriptBody();
+    }
+
+
+    public String getTaskScriptOutput(String taskId) {
+        TaskExecutor task = getTaskById(taskId);
+        List<TaskLog> taskLogList = task.getTaskLogList().getAndDeleteItems();
+        return taskLogList.stream()
+                .map(TaskLog::toString)
+                .collect(Collectors.joining("\n"));
+    }
+
     /**
      * Возвращает список задач находящихся в определенном состоянии
      *
@@ -131,4 +154,5 @@ public class TaskService {
             throw new NotFoundException("Task not found.");
         });
     }
+
 }

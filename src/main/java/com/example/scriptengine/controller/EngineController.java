@@ -75,6 +75,31 @@ public class EngineController {
     }
 
     /**
+     * Returns the script body for the task.
+     * <i>curl -X GET http://localhost:8080/task/f9d4092f-a614-4c58-96f7-8a1e0b564078/body</>
+     *
+     * @param id Task id
+     * @return Script body
+     */
+    @GetMapping("{id}/body")
+    public String scriptBody(@PathVariable String id) {
+        return taskService.getTaskScriptBody(id);
+    }
+
+    /**
+     * Returns the script output for the task.
+     * <i>curl -X GET http://localhost:8080/task/f9d4092f-a614-4c58-96f7-8a1e0b564078/output</>
+     *
+     * @param id Task id
+     * @return Script output
+     */
+    @GetMapping("{id}/output")
+    public String scriptOutput(@PathVariable String id) {
+        return taskService.getTaskScriptOutput(id);
+    }
+
+
+    /**
      * Returns task info by id
      * <i>curl -X GET http://localhost:8080/task/f9d4092f-a614-4c58-96f7-8a1e0b564078</>
      *

@@ -57,4 +57,9 @@ public class ScriptEngineLauncher implements EngineLauncher {
 
         return true;
     }
+
+    @Override
+    public String getScriptBody() {
+        return scriptBody;
+    }
 }

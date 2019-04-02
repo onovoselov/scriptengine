@@ -1,25 +1,22 @@
 package com.example.scriptengine;
 
+import com.example.scriptengine.config.AppConfig;
 import com.example.scriptengine.exceptions.ScriptCompileException;
 import com.example.scriptengine.model.TaskStage;
 import com.example.scriptengine.model.dto.TaskResultWidthLog;
 import com.example.scriptengine.service.TaskExecutor;
 import com.example.scriptengine.service.TaskService;
-import com.example.scriptengine.service.script.EngineLauncher;
-import com.example.scriptengine.service.script.ScriptEngineLauncher;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Observer;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.*;
 
 import static org.junit.Assert.assertEquals;
@@ -27,16 +24,20 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes= AppConfig.class)
 public class TaskServiceTest {
+    @Autowired
+    private ScriptEngine scriptEngine;
 
+    private TaskService service;
 
     @Before
-    public void setup() throws Exception {
+    public void setup() {
+        service = new TaskService(scriptEngine);
     }
 
     @Test
     public void testOkUnblocked() throws InterruptedException, ExecutionException, ScriptCompileException {
-        TaskService service = new TaskService();
         String id1 = service.runUnblocked(Fixtures.scriptSleep3s);
         TaskExecutor task1 = service.getTaskById(id1);
         String id2 = service.runUnblocked(Fixtures.scriptSleep3s);
@@ -58,7 +59,6 @@ public class TaskServiceTest {
     public void testOkBlocked() throws InterruptedException, ExecutionException, ScriptCompileException {
         final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-        TaskService service = new TaskService();
         StringWriter scriptWriter = new StringWriter();
         Future<?> future = executor.submit(service.getTaskExecutor(Fixtures.scriptSleep3s, scriptWriter));
         future.get();
@@ -72,7 +72,6 @@ public class TaskServiceTest {
     public void testInterrupt() throws InterruptedException, ExecutionException, ScriptCompileException {
         final CountDownLatch cdl = new CountDownLatch(1);
 
-        TaskService service = new TaskService();
         Observer changeStageObserver = (o, arg) -> {
             if(arg instanceof TaskStage) {
                 TaskStage stage = (TaskStage) arg;
@@ -88,5 +87,21 @@ public class TaskServiceTest {
         service.interrupt(id);
         task.getFuture().get();
         assertEquals(task.getStage(), TaskStage.Interrupted);
+    }
+
+    @Test
+    public void testScriptBody() throws ScriptCompileException, ExecutionException, InterruptedException {
+        String id = service.runUnblocked(Fixtures.script1);
+        TaskExecutor task = service.getTaskById(id);
+        task.getFuture().get();
+        assertEquals(service.getTaskScriptBody(id), Fixtures.script1);
+    }
+
+    @Test
+    public void testScriptOutput() throws ScriptCompileException, ExecutionException, InterruptedException {
+        String id = service.runUnblocked(Fixtures.script1);
+        TaskExecutor task = service.getTaskById(id);
+        task.getFuture().get();
+        assertThat(service.getTaskScriptOutput(id), CoreMatchers.containsString("Hello ScriptEngine!!!!"));
     }
 }
