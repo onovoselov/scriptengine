@@ -3,12 +3,10 @@ package com.example.scriptengine.controller;
 import com.example.scriptengine.exceptions.ScriptCompileException;
 import com.example.scriptengine.model.dto.TaskResult;
 import com.example.scriptengine.service.TaskService;
-import com.example.scriptengine.service.script.ScriptEngineLauncher;
 import com.example.scriptengine.service.script.writer.ResponseBodyEmitterWriter;
 import com.example.scriptengine.util.Converters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,20 +14,20 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ForkJoinTask;
 
 @RestController
 @RequestMapping("task")
 public class EngineController {
     static final Logger logger = LoggerFactory.getLogger(EngineController.class);
 
-    @Autowired
-    TaskService taskService;
+    private TaskService taskService;
+
+    public EngineController(TaskService taskService) {
+        this.taskService = taskService;
+    }
 
     /**
      * Script execution:
@@ -46,13 +44,13 @@ public class EngineController {
     @PostMapping()
     public ResponseEntity<ResponseBodyEmitter> newTask(@RequestBody String script,
                                                        @RequestParam("blocked") Optional<Integer> blocked,
-                                                       UriComponentsBuilder uriComponentsBuilder) throws IOException, ScriptCompileException {
+                                                       UriComponentsBuilder uriComponentsBuilder) throws ScriptCompileException {
 
         if (blocked.orElse(1) == 1) {
             ResponseBodyEmitter emitter = new ResponseBodyEmitter();
             Writer stdoutWriter = new ResponseBodyEmitterWriter(emitter);
             new Thread(taskService.getTaskExecutor(script, stdoutWriter)).start();
-            return new ResponseEntity(emitter, HttpStatus.OK);
+            return new ResponseEntity<>(emitter, HttpStatus.OK);
         } else {
             String taskId = taskService.runUnblocked(script);
             UriComponents uriTask = uriComponentsBuilder.path("/task/{id}").buildAndExpand(taskId);

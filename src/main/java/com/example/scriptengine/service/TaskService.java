@@ -5,13 +5,11 @@ import com.example.scriptengine.exceptions.ScriptCompileException;
 import com.example.scriptengine.model.TaskStage;
 import com.example.scriptengine.model.dto.TaskResult;
 import com.example.scriptengine.model.dto.TaskResultWidthLog;
-import com.example.scriptengine.service.script.EngineLauncher;
 import com.example.scriptengine.service.script.ScriptEngineLauncher;
 import org.springframework.stereotype.Service;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
-import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
 import java.util.Map;

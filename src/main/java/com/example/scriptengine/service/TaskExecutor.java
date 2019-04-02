@@ -125,9 +125,11 @@ public class TaskExecutor extends Observable implements Runnable {
     }
 
     private synchronized void interrupted() {
-        changeStage(TaskStage.Interrupted);
-        stopTime = LocalDateTime.now();
-        logger.info("INTERRUPTED: " + taskId);
+        if(stage != TaskStage.Interrupted) {
+            changeStage(TaskStage.Interrupted);
+            stopTime = LocalDateTime.now();
+            logger.info("INTERRUPTED: " + taskId);
+        }
     }
 
     private void changeStage(TaskStage stage) {
