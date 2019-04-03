@@ -21,8 +21,6 @@ import java.util.Optional;
 @RestController
 @RequestMapping("task")
 public class EngineController {
-    static final Logger logger = LoggerFactory.getLogger(EngineController.class);
-
     private TaskService taskService;
 
     public EngineController(TaskService taskService) {
