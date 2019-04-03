@@ -3,7 +3,6 @@ package com.example.scriptengine.service;
 import com.example.scriptengine.exceptions.NotFoundException;
 import com.example.scriptengine.exceptions.ScriptCompileException;
 import com.example.scriptengine.model.TaskLog;
-import com.example.scriptengine.model.TaskLogList;
 import com.example.scriptengine.model.TaskStage;
 import com.example.scriptengine.model.dto.TaskResult;
 import com.example.scriptengine.model.dto.TaskResultWidthLog;
@@ -11,7 +10,6 @@ import com.example.scriptengine.service.script.ScriptEngineLauncher;
 import org.springframework.stereotype.Service;
 
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import java.io.Writer;
 import java.util.List;
 import java.util.Map;
@@ -107,6 +105,12 @@ public class TaskService {
     }
 
 
+    /**
+     * Return script output
+     *
+     * @param taskId Task Id
+     * @return Script output
+     */
     public String getTaskScriptOutput(String taskId) {
         TaskExecutor task = getTaskById(taskId);
         List<TaskLog> taskLogList = task.getTaskLogList().getAndDeleteItems();
@@ -116,9 +120,9 @@ public class TaskService {
     }
 
     /**
-     * Возвращает список задач находящихся в определенном состоянии
+     * Returns a list of tasks in a specific stage.
      *
-     * @param stage сотояние задачи Pending|InProgress|DoneOk|DoneError|Interrupted
+     * @param stage task stage: Pending|InProgress|DoneOk|DoneError|Interrupted
      * @return List<TaskResult>
      */
     public List<TaskResult> getTasks(TaskStage stage) {
@@ -129,7 +133,7 @@ public class TaskService {
     }
 
     /**
-     * Возвращает все задачи
+     * Returns all tasks
      *
      * @return List<TaskResult>
      */
@@ -140,9 +144,9 @@ public class TaskService {
     }
 
     /**
-     * Возвращает информацию по конкретной задаче
+     * Returns task information.
      *
-     * @param taskId идентификатор задачи
+     * @param taskId Task Id
      * @return TaskResultWidthLog
      */
     public TaskResultWidthLog getTaskResult(String taskId) {
