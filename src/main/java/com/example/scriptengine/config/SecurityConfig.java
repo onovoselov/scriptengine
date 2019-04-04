@@ -1,8 +1,10 @@
 package com.example.scriptengine.config;
 
+import com.example.scriptengine.security.RestAuthenticationEntryPoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -10,27 +12,32 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.zalando.problem.spring.web.advice.security.SecurityProblemSupport;
 
 @Configuration
 @EnableWebSecurity
+@Import(SecurityProblemSupport.class)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-    private RestAuthenticationEntryPoint restAuthenticationEntryPoint;
+    final private RestAuthenticationEntryPoint restAuthenticationEntryPoint;
+    final private SecurityProblemSupport problemSupport;
 
-
-    public SecurityConfig(RestAuthenticationEntryPoint restAuthenticationEntryPoint) {
+    public SecurityConfig(RestAuthenticationEntryPoint restAuthenticationEntryPoint, SecurityProblemSupport problemSupport) {
         this.restAuthenticationEntryPoint = restAuthenticationEntryPoint;
+        this.problemSupport = problemSupport;
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http
-                .csrf().disable()
+        http.csrf().disable()
                 .authorizeRequests()
                 .antMatchers(HttpMethod.GET, "/task").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .httpBasic()
                 .authenticationEntryPoint(restAuthenticationEntryPoint);
+        http.exceptionHandling()
+                .authenticationEntryPoint(problemSupport)
+                .accessDeniedHandler(problemSupport);
     }
 
     @Bean
@@ -41,7 +48,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
         auth.inMemoryAuthentication()
-                .withUser("user1").password(passwordEncoder().encode("111111"))
-                .authorities("ROLE_USER");
+                .withUser("user1")
+                .password(passwordEncoder().encode("111111")).authorities("ROLE_USER");
+        auth.inMemoryAuthentication()
+                .withUser("user2")
+                .password(passwordEncoder().encode("222222")).authorities("ROLE_USER");
+        auth.inMemoryAuthentication()
+                .withUser("admin")
+                .password(passwordEncoder().encode("111111")).authorities("ROLE_ADMIN");
     }
 }

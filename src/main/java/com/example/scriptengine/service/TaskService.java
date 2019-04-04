@@ -1,9 +1,11 @@
 package com.example.scriptengine.service;
 
 import com.example.scriptengine.exceptions.NotFoundException;
+import com.example.scriptengine.exceptions.PermissionException;
 import com.example.scriptengine.exceptions.ScriptCompileException;
 import com.example.scriptengine.model.TaskLog;
 import com.example.scriptengine.model.TaskStage;
+import com.example.scriptengine.model.User;
 import com.example.scriptengine.model.dto.TaskResult;
 import com.example.scriptengine.model.dto.TaskResultWidthLog;
 import com.example.scriptengine.service.script.ScriptEngineLauncher;
@@ -41,8 +43,8 @@ public class TaskService {
      * @param scriptOutputWriter Writer куда будет записываться stdout javascript
      * @return TaskExecutor
      */
-    public TaskExecutor getTaskExecutor(String scriptBody, Writer scriptOutputWriter) throws ScriptCompileException {
-        TaskExecutor taskExecutor = new TaskExecutor(new ScriptEngineLauncher(scriptBody, engine), scriptOutputWriter);
+    public TaskExecutor getTaskExecutor(String scriptBody, String scriptOwner, Writer scriptOutputWriter) throws ScriptCompileException {
+        TaskExecutor taskExecutor = new TaskExecutor(new ScriptEngineLauncher(scriptBody, scriptOwner, engine), scriptOutputWriter);
         tasks.put(taskExecutor.getTaskId(), taskExecutor);
         return taskExecutor;
     }
@@ -53,8 +55,8 @@ public class TaskService {
      * @param scriptBody Javascript body
      * @return Task Id
      */
-    public String runUnblocked(String scriptBody) throws ScriptCompileException {
-        return runUnblocked(scriptBody, null);
+    public String runUnblocked(String scriptBody, String scriptOwner) throws ScriptCompileException {
+        return runUnblocked(scriptBody, scriptOwner, null);
     }
 
     /**
@@ -63,8 +65,8 @@ public class TaskService {
      * @param scriptBody Javascript body
      * @return Task Id
      */
-    public String runUnblocked(String scriptBody, Observer changeStageObserver) throws ScriptCompileException {
-        TaskExecutor taskExecutor = new TaskExecutor(new ScriptEngineLauncher(scriptBody, engine));
+    public String runUnblocked(String scriptBody, String scriptOwner, Observer changeStageObserver) throws ScriptCompileException {
+        TaskExecutor taskExecutor = new TaskExecutor(new ScriptEngineLauncher(scriptBody, scriptOwner, engine));
         if(changeStageObserver != null) {
             taskExecutor.addObserver(changeStageObserver);
         }
@@ -78,11 +80,11 @@ public class TaskService {
 
     /**
      * Interrupts the thread
-     *
-     * @param taskId Task Id
+     *  @param taskId Task Id
+     * @param user User
      */
-    public void interrupt(String taskId) {
-        TaskExecutor task = getTaskById(taskId);
+    public void interrupt(String taskId, User user) throws PermissionException {
+        TaskExecutor task = getTaskById(taskId, user);
         Thread thread = task.getThread().get();
         if (task.getStage() == TaskStage.InProgress && thread != null) {
             task.interrupt();
@@ -97,10 +99,11 @@ public class TaskService {
      * Return script body
      *
      * @param taskId Task Id
+     * @param user User
      * @return Script body
      */
-    public String getTaskScriptBody(String taskId) {
-        TaskExecutor task = getTaskById(taskId);
+    public String getTaskScriptBody(String taskId, User user) throws PermissionException {
+        TaskExecutor task = getTaskById(taskId, user);
         return task.getEngineLauncher().getScriptBody();
     }
 
@@ -109,10 +112,11 @@ public class TaskService {
      * Return script output
      *
      * @param taskId Task Id
+     * @param user User
      * @return Script output
      */
-    public String getTaskScriptOutput(String taskId) {
-        TaskExecutor task = getTaskById(taskId);
+    public String getTaskScriptOutput(String taskId, User user) throws PermissionException {
+        TaskExecutor task = getTaskById(taskId, user);
         List<TaskLog> taskLogList = task.getTaskLogList().getAndDeleteItems();
         return taskLogList.stream()
                 .map(TaskLog::toString)
@@ -147,16 +151,27 @@ public class TaskService {
      * Returns task information.
      *
      * @param taskId Task Id
+     * @param user User
      * @return TaskResultWidthLog
      */
-    public TaskResultWidthLog getTaskResult(String taskId) {
-        return new TaskResultWidthLog(getTaskById(taskId));
+    public TaskResultWidthLog getTaskResult(String taskId, User user) throws PermissionException {
+        return new TaskResultWidthLog(getTaskById(taskId, user));
     }
 
     public TaskExecutor getTaskById(String taskId) {
         return tasks.computeIfAbsent(taskId, t -> {
             throw new NotFoundException("Task not found.");
         });
+    }
+
+    private TaskExecutor getTaskById(String taskId, User user) throws PermissionException {
+        TaskExecutor task = getTaskById(taskId);
+
+        if(!user.isAdmin() && !user.getUserName().equals(task.getEngineLauncher().getScriptOwner())) {
+            throw new PermissionException("Permission denied");
+        }
+
+        return task;
     }
 
 }

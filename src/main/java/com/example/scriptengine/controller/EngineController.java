@@ -1,14 +1,16 @@
 package com.example.scriptengine.controller;
 
+import com.example.scriptengine.exceptions.PermissionException;
 import com.example.scriptengine.exceptions.ScriptCompileException;
+import com.example.scriptengine.model.User;
 import com.example.scriptengine.model.dto.TaskResult;
+import com.example.scriptengine.security.AuthenticationFacade;
 import com.example.scriptengine.service.TaskService;
 import com.example.scriptengine.service.script.writer.ResponseBodyEmitterWriter;
 import com.example.scriptengine.util.Converters;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 import org.springframework.web.util.UriComponents;
@@ -40,17 +42,20 @@ public class EngineController {
      * Location: /task/f9d4092f-a614-4c58-96f7-8a1e0b564078
      */
     @PostMapping()
+    @PreAuthorize("authenticated")
     public ResponseEntity<ResponseBodyEmitter> newTask(@RequestBody String script,
                                                        @RequestParam("blocked") Optional<Integer> blocked,
-                                                       UriComponentsBuilder uriComponentsBuilder) throws ScriptCompileException {
+                                                       UriComponentsBuilder uriComponentsBuilder,
+                                                       AuthenticationFacade authenticationFacade) throws ScriptCompileException {
 
+        User user = authenticationFacade.getUser();
         if (blocked.orElse(1) == 1) {
             ResponseBodyEmitter emitter = new ResponseBodyEmitter();
             Writer stdoutWriter = new ResponseBodyEmitterWriter(emitter);
-            new Thread(taskService.getTaskExecutor(script, stdoutWriter)).start();
+            new Thread(taskService.getTaskExecutor(script, user.getUserName(), stdoutWriter)).start();
             return new ResponseEntity<>(emitter, HttpStatus.OK);
         } else {
-            String taskId = taskService.runUnblocked(script);
+            String taskId = taskService.runUnblocked(script, user.getName());
             UriComponents uriTask = uriComponentsBuilder.path("/task/{id}").buildAndExpand(taskId);
             return ResponseEntity.created(uriTask.toUri()).build();
         }
@@ -80,8 +85,8 @@ public class EngineController {
      * @return Script body
      */
     @GetMapping("{id}/body")
-    public String scriptBody(@PathVariable String id) {
-        return taskService.getTaskScriptBody(id);
+    public String scriptBody(@PathVariable String id, AuthenticationFacade authenticationFacade) throws PermissionException {
+        return taskService.getTaskScriptBody(id, authenticationFacade.getUser());
     }
 
     /**
@@ -92,10 +97,9 @@ public class EngineController {
      * @return Script output
      */
     @GetMapping("{id}/output")
-    public String scriptOutput(@PathVariable String id) {
-        return taskService.getTaskScriptOutput(id);
+    public String scriptOutput(@PathVariable String id, AuthenticationFacade authenticationFacade) throws PermissionException {
+        return taskService.getTaskScriptOutput(id, authenticationFacade.getUser());
     }
-
 
     /**
      * Returns task info by id
@@ -105,8 +109,8 @@ public class EngineController {
      * @return TaskResultWidthLog
      */
     @GetMapping("{id}")
-    public TaskResult task(@PathVariable String id) {
-        return taskService.getTaskResult(id);
+    public TaskResult task(@PathVariable String id, AuthenticationFacade authenticationFacade) throws PermissionException {
+        return taskService.getTaskResult(id, authenticationFacade.getUser());
     }
 
     /**
@@ -116,8 +120,8 @@ public class EngineController {
      * @param id Task id
      */
     @DeleteMapping("{id}")
-    public void delete(@PathVariable String id) {
-        taskService.interrupt(id);
+    public void delete(@PathVariable String id, AuthenticationFacade authenticationFacade) throws PermissionException {
+        taskService.interrupt(id, authenticationFacade.getUser());
     }
 }
 

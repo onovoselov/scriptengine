@@ -12,18 +12,20 @@ import java.util.List;
  */
 public class TaskResult {
     private String id;
+    private String owner;
     private TaskStage stage;
     private LocalDateTime startTime;
     private LocalDateTime stopTime;
     private List<TaskLink> links;
 
-    public TaskResult() {
+    TaskResult() {
         this.links = new ArrayList<>();
     }
 
     public TaskResult(TaskExecutor taskExecutor) {
         this();
         this.id = taskExecutor.getTaskId();
+        this.owner = taskExecutor.getEngineLauncher().getScriptOwner();
         this.stage = taskExecutor.getStage();
         this.startTime = taskExecutor.getStartTime();
         this.stopTime = taskExecutor.getStopTime();
@@ -48,5 +50,9 @@ public class TaskResult {
 
     public List<TaskLink> getLinks() {
         return links;
+    }
+
+    public String getOwner() {
+        return owner;
     }
 }

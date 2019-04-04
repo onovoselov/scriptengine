@@ -6,4 +6,5 @@ import java.io.Writer;
 public interface EngineLauncher {
     boolean launch(Writer stdoutWriter) throws IOException;
     String getScriptBody();
+    String getScriptOwner();
 }

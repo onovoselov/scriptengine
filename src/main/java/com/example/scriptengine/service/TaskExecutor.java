@@ -170,7 +170,7 @@ public class TaskExecutor extends Observable implements Runnable {
         return future;
     }
 
-    EngineLauncher getEngineLauncher() {
+    public EngineLauncher getEngineLauncher() {
         return engineLauncher;
     }
 }

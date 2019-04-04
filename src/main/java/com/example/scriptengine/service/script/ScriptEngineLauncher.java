@@ -14,11 +14,13 @@ import java.util.Optional;
 public class ScriptEngineLauncher implements EngineLauncher {
     final private ScriptEngine engine;
     final private String scriptBody;
+    final private String scriptOwner;
     private CompiledScript compiledScript;
 
-    public ScriptEngineLauncher(String scriptBody, ScriptEngine engine) throws ScriptCompileException {
+    public ScriptEngineLauncher(String scriptBody, String scriptOwner, ScriptEngine engine) throws ScriptCompileException {
         this.scriptBody = scriptBody;
         this.engine = engine;
+        this.scriptOwner = scriptOwner;
         compile();
     }
 
@@ -56,6 +58,11 @@ public class ScriptEngineLauncher implements EngineLauncher {
         }
 
         return true;
+    }
+
+    @Override
+    public String getScriptOwner() {
+        return scriptOwner;
     }
 
     @Override

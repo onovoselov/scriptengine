@@ -1,4 +1,4 @@
-package com.example.scriptengine.config;
+package com.example.scriptengine.security;
 
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
