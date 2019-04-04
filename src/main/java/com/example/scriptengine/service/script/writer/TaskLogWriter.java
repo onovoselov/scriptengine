@@ -1,5 +1,6 @@
 package com.example.scriptengine.service.script.writer;
 
+import com.example.scriptengine.exceptions.ThreadInterrupted;
 import com.example.scriptengine.model.TaskLog;
 import com.example.scriptengine.model.TaskLogList;
 
@@ -12,13 +13,19 @@ import java.time.LocalDateTime;
  */
 public class TaskLogWriter extends Writer {
     final private TaskLogList logList;
+    private boolean closed;
 
     public TaskLogWriter(TaskLogList logList) {
         this.logList = logList;
+        this.closed = false;
     }
 
     @Override
     public void write(char[] cbuf, int off, int len) throws IOException {
+        if(closed) {
+            throw new ThreadInterrupted("Interrupted by user");
+        }
+
         if (cbuf != null && len > 0 && cbuf[0] != '\r' && cbuf[0] != '\n') {
             addTaskLog(String.valueOf(cbuf, off, len));
         }
@@ -40,6 +47,6 @@ public class TaskLogWriter extends Writer {
 
     @Override
     public void close() throws IOException {
-
+        closed = true;
     }
 }

@@ -1,5 +1,6 @@
 package com.example.scriptengine.service;
 
+import com.example.scriptengine.config.AppProperties;
 import com.example.scriptengine.exceptions.NotFoundException;
 import com.example.scriptengine.exceptions.PermissionException;
 import com.example.scriptengine.exceptions.ScriptCompileException;
@@ -9,6 +10,7 @@ import com.example.scriptengine.model.User;
 import com.example.scriptengine.model.dto.TaskResult;
 import com.example.scriptengine.model.dto.TaskResultWidthLog;
 import com.example.scriptengine.service.script.ScriptEngineLauncher;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.script.ScriptEngine;
@@ -24,14 +26,12 @@ import java.util.stream.Collectors;
  */
 @Service
 public class TaskService {
-    final private static int NUM_TREADS = 10;
     final private ExecutorService executorService;
     final private Map<String, TaskExecutor> tasks;
     final private ScriptEngine engine;
 
-
-    public TaskService(ScriptEngine engine) {
-        this.executorService = Executors.newFixedThreadPool(NUM_TREADS);
+    public TaskService(ScriptEngine engine, AppProperties appProperties) {
+        this.executorService = Executors.newFixedThreadPool(appProperties.getNumThreads());
         this.tasks = new ConcurrentHashMap<>();
         this.engine = engine;
     }
@@ -83,12 +83,14 @@ public class TaskService {
      *  @param taskId Task Id
      * @param user User
      */
-    public void interrupt(String taskId, User user) throws PermissionException {
+    public void interrupt(String taskId, User user) throws PermissionException, NotFoundException {
         TaskExecutor task = getTaskById(taskId, user);
+        if(task.getStage() != TaskStage.Pending && task.getStage() != TaskStage.InProgress)
+            throw new NotFoundException("Script is not active");
+
         Thread thread = task.getThread().get();
         if (task.getStage() == TaskStage.InProgress && thread != null) {
             task.interrupt();
-            thread.stop();
         } else {
             task.cancel();
         }

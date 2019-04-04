@@ -1,6 +1,7 @@
 package com.example.scriptengine;
 
 import com.example.scriptengine.config.AppConfig;
+import com.example.scriptengine.config.AppProperties;
 import com.example.scriptengine.exceptions.PermissionException;
 import com.example.scriptengine.exceptions.ScriptCompileException;
 import com.example.scriptengine.model.TaskStage;
@@ -38,7 +39,7 @@ public class TaskServiceTest {
 
     @Before
     public void setup() {
-        service = new TaskService(scriptEngine);
+        service = new TaskService(scriptEngine, new AppProperties(10));
     }
 
     @Test

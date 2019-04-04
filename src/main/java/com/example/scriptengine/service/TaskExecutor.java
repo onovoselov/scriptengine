@@ -9,6 +9,7 @@ import com.example.scriptengine.service.script.EngineLauncher;
 import com.example.scriptengine.service.script.writer.TaskLogWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -23,6 +24,7 @@ import java.util.concurrent.CompletableFuture;
  */
 public class TaskExecutor extends Observable implements Runnable {
     static final private Logger logger = LoggerFactory.getLogger(EngineController.class);
+    static final private int TIME_AWAIT_INTERRUPT = 3000;
 
     private EngineLauncher engineLauncher;
     private Writer scriptOutputWriter;
@@ -107,14 +109,44 @@ public class TaskExecutor extends Observable implements Runnable {
         logger.info("ERROR: " + taskId);
     }
 
+    /**
+     * First we try to close the standard output, if it does not help, then we interrupt it,
+     * if it does not help, we stop the thread.
+     */
     void interrupt() {
         try {
             scriptOutputWriter.write("The script was forcibly interrupted.");
             scriptOutputWriter.flush();
+            // Close output
+            scriptOutputWriter.close();
+            awaitInterrupt();
+            // Did not help
+            if (stage == TaskStage.InProgress) {
+                Thread thread = getThread().get();
+                if (thread != null) {
+                    thread.interrupt();
+                    awaitInterrupt();
+                    // Did not help
+                    thread.stop();
+                    logger.info("THREAD STOP: " + taskId);
+                }
+            }
+
             interrupted();
-        } catch (IOException e) {
-            logger.error("ScriptOutputWriter.write()", e);
+        } catch (IOException ex) {
+            logger.error("ScriptOutputWriter.interrupt()", ex);
         }
+    }
+
+    private void awaitInterrupt() {
+        try {
+            for (int i = 0; i < 30 && stage == TaskStage.InProgress; i++) {
+                Thread.sleep(TIME_AWAIT_INTERRUPT / 30);
+            }
+        } catch (InterruptedException ex) {
+            logger.error("awaitInterrupt", ex);
+        }
+
     }
 
     void cancel() {
@@ -125,7 +157,7 @@ public class TaskExecutor extends Observable implements Runnable {
     }
 
     private synchronized void interrupted() {
-        if(stage != TaskStage.Interrupted) {
+        if (stage != TaskStage.Interrupted) {
             changeStage(TaskStage.Interrupted);
             stopTime = LocalDateTime.now();
             logger.info("INTERRUPTED: " + taskId);
@@ -173,4 +205,5 @@ public class TaskExecutor extends Observable implements Runnable {
     public EngineLauncher getEngineLauncher() {
         return engineLauncher;
     }
+
 }

@@ -20,10 +20,10 @@ public class ResponseBodyEmitterWriter extends Writer {
     }
 
     @Override
-    public void write(char[] cbuf, int off, int len) throws IOException {
+    public void write(char[] cbuf, int off, int len) {
         try {
             emitter.send(String.valueOf(cbuf, off, len), MediaType.TEXT_PLAIN);
-        } catch (ClientAbortException e) {
+        } catch (Exception e) {
             throw new ThreadInterrupted("Interrupted by user");
         }
     }

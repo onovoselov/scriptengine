@@ -1,5 +1,6 @@
 package com.example.scriptengine.controller;
 
+import com.example.scriptengine.exceptions.NotFoundException;
 import com.example.scriptengine.exceptions.PermissionException;
 import com.example.scriptengine.exceptions.ScriptCompileException;
 import com.example.scriptengine.model.User;
@@ -120,7 +121,7 @@ public class EngineController {
      * @param id Task id
      */
     @DeleteMapping("{id}")
-    public void delete(@PathVariable String id, AuthenticationFacade authenticationFacade) throws PermissionException {
+    public void delete(@PathVariable String id, AuthenticationFacade authenticationFacade) throws PermissionException, NotFoundException {
         taskService.interrupt(id, authenticationFacade.getUser());
     }
 }
