@@ -6,9 +6,10 @@ import com.example.scriptengine.exceptions.PermissionException;
 import com.example.scriptengine.exceptions.ScriptCompileException;
 import com.example.scriptengine.model.TaskStage;
 import com.example.scriptengine.model.User;
-import com.example.scriptengine.model.dto.TaskResultWidthLog;
+import com.example.scriptengine.model.dto.TaskResourceWidthLog;
 import com.example.scriptengine.service.TaskExecutor;
 import com.example.scriptengine.service.TaskService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,6 +25,7 @@ import java.util.concurrent.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = AppConfig.class)
@@ -48,15 +50,15 @@ public class TaskServiceTest {
         TaskExecutor task2 = service.runUnblocked(Fixtures.scriptSleep3s, USER_NAME);
         task1.getFuture().get();
         task2.getFuture().get();
-        TaskResultWidthLog result = service.getTaskResult(task1.getTaskId(), user);
-        assertEquals(result.getLog().size(), 2);
+        TaskResourceWidthLog result = service.getTaskResult(task1.getTaskId(), user);
+        assertEquals(result.getOutput().size(), 2);
         result = service.getTaskResult(task1.getTaskId(), user);
-        assertEquals(result.getLog().size(), 0);
+        assertEquals(result.getOutput().size(), 0);
 
         result = service.getTaskResult(task2.getTaskId(), user);
-        assertEquals(result.getLog().size(), 2);
+        assertEquals(result.getOutput().size(), 2);
         result = service.getTaskResult(task2.getTaskId(), user);
-        assertEquals(result.getLog().size(), 0);
+        assertEquals(result.getOutput().size(), 0);
     }
 
     @Test
@@ -113,5 +115,14 @@ public class TaskServiceTest {
         assertThat(
                 service.getTaskScriptOutput(task.getTaskId(), user),
                 CoreMatchers.containsString("Hello ScriptEngine!!!!"));
+    }
+
+    @Test
+    public void testHateoas() throws ScriptCompileException, ExecutionException, InterruptedException, PermissionException, JsonProcessingException {
+        TaskExecutor task = service.runUnblocked(Fixtures.script1, USER_NAME);
+        task.getFuture().get();
+        TaskResourceWidthLog taskResourceWidthLog = service.getTaskResult(task.getTaskId(), user);
+//        taskResourceWidthLog
+
     }
 }

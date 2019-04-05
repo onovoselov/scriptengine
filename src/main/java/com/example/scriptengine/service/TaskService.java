@@ -7,8 +7,8 @@ import com.example.scriptengine.exceptions.ScriptCompileException;
 import com.example.scriptengine.model.TaskLog;
 import com.example.scriptengine.model.TaskStage;
 import com.example.scriptengine.model.User;
-import com.example.scriptengine.model.dto.TaskResult;
-import com.example.scriptengine.model.dto.TaskResultWidthLog;
+import com.example.scriptengine.model.dto.TaskResource;
+import com.example.scriptengine.model.dto.TaskResourceWidthLog;
 import com.example.scriptengine.service.script.ScriptEngineLauncher;
 import org.springframework.stereotype.Service;
 
@@ -144,22 +144,22 @@ public class TaskService {
      * Returns a list of tasks in a specific stage.
      *
      * @param stage task stage: Pending|InProgress|DoneOk|DoneError|Interrupted
-     * @return List<TaskResult>
+     * @return List<TaskResource>
      */
-    public List<TaskResult> getTasks(TaskStage stage) {
+    public List<TaskResource> getTasks(TaskStage stage) {
         return tasks.values().stream()
                 .filter(task -> task.getStage() == stage)
-                .map(TaskResult::new)
+                .map(TaskResource::new)
                 .collect(Collectors.toList());
     }
 
     /**
      * Returns all tasks
      *
-     * @return List<TaskResult>
+     * @return List<TaskResource>
      */
-    public List<TaskResult> getTasks() {
-        return tasks.values().stream().map(TaskResult::new).collect(Collectors.toList());
+    public List<TaskResource> getTasks() {
+        return tasks.values().stream().map(TaskResource::new).collect(Collectors.toList());
     }
 
     /**
@@ -167,10 +167,10 @@ public class TaskService {
      *
      * @param taskId Task Id
      * @param user User
-     * @return TaskResultWidthLog
+     * @return TaskResourceWidthLog
      */
-    public TaskResultWidthLog getTaskResult(String taskId, User user) throws PermissionException {
-        return new TaskResultWidthLog(getTaskById(taskId, user));
+    public TaskResourceWidthLog getTaskResult(String taskId, User user) throws PermissionException {
+        return new TaskResourceWidthLog(getTaskById(taskId, user));
     }
 
     private long getActiveTaskCount() {
