@@ -31,7 +31,6 @@ public class TaskServiceTest {
     final private static String USER_NAME = "TestUser";
     final private static User user = new User(USER_NAME, "ROLE_ADMIN");
 
-
     @Autowired
     private ScriptEngine scriptEngine;
 
@@ -39,35 +38,32 @@ public class TaskServiceTest {
 
     @Before
     public void setup() {
-        service = new TaskService(scriptEngine, new AppProperties(10));
+        service = new TaskService(scriptEngine, new AppProperties(10, 3000));
     }
 
     @Test
     public void testOkUnblocked() throws InterruptedException, ExecutionException, ScriptCompileException, PermissionException {
-        String id1 = service.runUnblocked(Fixtures.scriptSleep3s, USER_NAME);
-        TaskExecutor task1 = service.getTaskById(id1);
-        String id2 = service.runUnblocked(Fixtures.scriptSleep3s, USER_NAME);
-        TaskExecutor task2 = service.getTaskById(id2);
+        TaskExecutor task1 = service.runUnblocked(Fixtures.scriptSleep3s, USER_NAME);
+        TaskExecutor task2 = service.runUnblocked(Fixtures.scriptSleep3s, USER_NAME);
         task1.getFuture().get();
         task2.getFuture().get();
-        TaskResultWidthLog result = service.getTaskResult(id1, user);
+        TaskResultWidthLog result = service.getTaskResult(task1.getTaskId(), user);
         assertEquals(result.getLog().size(), 2);
-        result = service.getTaskResult(id1, user);
+        result = service.getTaskResult(task1.getTaskId(), user);
         assertEquals(result.getLog().size(), 0);
 
-        result = service.getTaskResult(id2, user);
+        result = service.getTaskResult(task2.getTaskId(), user);
         assertEquals(result.getLog().size(), 2);
-        result = service.getTaskResult(id2, user);
+        result = service.getTaskResult(task2.getTaskId(), user);
         assertEquals(result.getLog().size(), 0);
     }
 
     @Test
     public void testOkBlocked() throws InterruptedException, ExecutionException, ScriptCompileException {
-        final ExecutorService executor = Executors.newSingleThreadExecutor();
-
         StringWriter scriptWriter = new StringWriter();
-        Future<?> future = executor.submit(service.getTaskExecutor(Fixtures.scriptSleep3s, USER_NAME, scriptWriter));
-        future.get();
+
+        TaskExecutor task = service.runBlocked(Fixtures.scriptSleep3s, USER_NAME, scriptWriter);
+        task.getFuture().get();
 
         String output = scriptWriter.toString();
         assertThat(output, CoreMatchers.containsString("Start sleep 3 sec"));
@@ -86,28 +82,24 @@ public class TaskServiceTest {
                 }
             }
         };
-        String id = service.runUnblocked(Fixtures.scriptSleep3s, USER_NAME, changeStageObserver);
-        TaskExecutor task = service.getTaskById(id);
-
+        TaskExecutor task = service.runUnblocked(Fixtures.scriptSleep3s, USER_NAME, changeStageObserver);
         cdl.await();
-        service.interrupt(id, user);
+        service.interrupt(task.getTaskId(), user);
         task.getFuture().get();
         assertEquals(task.getStage(), TaskStage.Interrupted);
     }
 
     @Test
     public void testScriptBody() throws ScriptCompileException, ExecutionException, InterruptedException, PermissionException {
-        String id = service.runUnblocked(Fixtures.script1, USER_NAME);
-        TaskExecutor task = service.getTaskById(id);
+        TaskExecutor task = service.runUnblocked(Fixtures.script1, USER_NAME);
         task.getFuture().get();
-        assertEquals(service.getTaskScriptBody(id, user), Fixtures.script1);
+        assertEquals(service.getTaskScriptBody(task.getTaskId(), user), Fixtures.script1);
     }
 
     @Test
     public void testScriptOutput() throws ScriptCompileException, ExecutionException, InterruptedException, PermissionException {
-        String id = service.runUnblocked(Fixtures.script1, USER_NAME);
-        TaskExecutor task = service.getTaskById(id);
+        TaskExecutor task = service.runUnblocked(Fixtures.script1, USER_NAME);
         task.getFuture().get();
-        assertThat(service.getTaskScriptOutput(id, user), CoreMatchers.containsString("Hello ScriptEngine!!!!"));
+        assertThat(service.getTaskScriptOutput(task.getTaskId(), user), CoreMatchers.containsString("Hello ScriptEngine!!!!"));
     }
 }

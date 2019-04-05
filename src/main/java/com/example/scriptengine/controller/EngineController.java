@@ -6,6 +6,7 @@ import com.example.scriptengine.exceptions.ScriptCompileException;
 import com.example.scriptengine.model.User;
 import com.example.scriptengine.model.dto.TaskResult;
 import com.example.scriptengine.security.AuthenticationFacade;
+import com.example.scriptengine.service.TaskExecutor;
 import com.example.scriptengine.service.TaskService;
 import com.example.scriptengine.service.script.writer.ResponseBodyEmitterWriter;
 import com.example.scriptengine.util.Converters;
@@ -53,11 +54,11 @@ public class EngineController {
         if (blocked.orElse(1) == 1) {
             ResponseBodyEmitter emitter = new ResponseBodyEmitter();
             Writer stdoutWriter = new ResponseBodyEmitterWriter(emitter);
-            new Thread(taskService.getTaskExecutor(script, user.getUserName(), stdoutWriter)).start();
+            taskService.runBlocked(script, user.getName(), stdoutWriter);
             return new ResponseEntity<>(emitter, HttpStatus.OK);
         } else {
-            String taskId = taskService.runUnblocked(script, user.getName());
-            UriComponents uriTask = uriComponentsBuilder.path("/task/{id}").buildAndExpand(taskId);
+            TaskExecutor taskExecutor = taskService.runUnblocked(script, user.getName());
+            UriComponents uriTask = uriComponentsBuilder.path("/task/{id}").buildAndExpand(taskExecutor.getTaskId());
             return ResponseEntity.created(uriTask.toUri()).build();
         }
     }

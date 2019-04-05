@@ -1,5 +1,6 @@
 package com.example.scriptengine.service;
 
+import com.example.scriptengine.config.AppProperties;
 import com.example.scriptengine.controller.EngineController;
 import com.example.scriptengine.exceptions.ThreadInterrupted;
 import com.example.scriptengine.model.TaskLogArrayList;
@@ -24,7 +25,6 @@ import java.util.concurrent.CompletableFuture;
  */
 public class TaskExecutor extends Observable implements Runnable {
     static final private Logger logger = LoggerFactory.getLogger(EngineController.class);
-    static final private int TIME_AWAIT_INTERRUPT = 3000;
 
     private EngineLauncher engineLauncher;
     private Writer scriptOutputWriter;
@@ -35,21 +35,23 @@ public class TaskExecutor extends Observable implements Runnable {
     private TaskLogList taskLogList;
     private CompletableFuture<Void> future;
     private WeakReference<Thread> thread;
+    private AppProperties appProperties;
 
     /**
      * @param engineLauncher EngineLauncher - исполнитель скрипта
      */
-    TaskExecutor(EngineLauncher engineLauncher) {
+    TaskExecutor(EngineLauncher engineLauncher, AppProperties appProperties) {
         init(engineLauncher);
         this.engineLauncher = engineLauncher;
+        this.appProperties = appProperties;
     }
 
     /**
      * @param engineLauncher     EngineLauncher - исполнитель скрипта
      * @param scriptOutputWriter Writer куда будет записываться stdout javascript
      */
-    TaskExecutor(EngineLauncher engineLauncher, Writer scriptOutputWriter) {
-        this(engineLauncher);
+    TaskExecutor(EngineLauncher engineLauncher, AppProperties appProperties, Writer scriptOutputWriter) {
+        this(engineLauncher, appProperties);
         this.scriptOutputWriter = scriptOutputWriter;
     }
 
@@ -140,8 +142,8 @@ public class TaskExecutor extends Observable implements Runnable {
 
     private void awaitInterrupt() {
         try {
-            for (int i = 0; i < 30 && stage == TaskStage.InProgress; i++) {
-                Thread.sleep(TIME_AWAIT_INTERRUPT / 30);
+            for (int i = 0; i < 50 && stage == TaskStage.InProgress; i++) {
+                Thread.sleep(appProperties.getInterruptTimeout() / 50);
             }
         } catch (InterruptedException ex) {
             logger.error("awaitInterrupt", ex);

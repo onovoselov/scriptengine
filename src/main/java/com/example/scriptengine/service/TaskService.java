@@ -10,7 +10,6 @@ import com.example.scriptengine.model.User;
 import com.example.scriptengine.model.dto.TaskResult;
 import com.example.scriptengine.model.dto.TaskResultWidthLog;
 import com.example.scriptengine.service.script.ScriptEngineLauncher;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.script.ScriptEngine;
@@ -29,23 +28,30 @@ public class TaskService {
     final private ExecutorService executorService;
     final private Map<String, TaskExecutor> tasks;
     final private ScriptEngine engine;
+    final private AppProperties appProperties;
 
     public TaskService(ScriptEngine engine, AppProperties appProperties) {
         this.executorService = Executors.newFixedThreadPool(appProperties.getNumThreads());
         this.tasks = new ConcurrentHashMap<>();
         this.engine = engine;
+        this.appProperties = appProperties;
     }
 
     /**
-     * Returns runnable jobs for later launch.
+     * Run script in blocked mode
      *
-     * @param scriptBody Javascript body
+     * @param scriptBody         Javascript body
      * @param scriptOutputWriter Writer куда будет записываться stdout javascript
      * @return TaskExecutor
      */
-    public TaskExecutor getTaskExecutor(String scriptBody, String scriptOwner, Writer scriptOutputWriter) throws ScriptCompileException {
-        TaskExecutor taskExecutor = new TaskExecutor(new ScriptEngineLauncher(scriptBody, scriptOwner, engine), scriptOutputWriter);
+    public TaskExecutor runBlocked(String scriptBody, String scriptOwner, Writer scriptOutputWriter) throws ScriptCompileException {
+        if (getActiveTaskCount() >= appProperties.getNumThreads())
+            throw new NotFoundException("There are no free threads to execute the script. Try later.");
+
+        TaskExecutor taskExecutor = new TaskExecutor(new ScriptEngineLauncher(scriptBody, scriptOwner, engine), appProperties, scriptOutputWriter);
         tasks.put(taskExecutor.getTaskId(), taskExecutor);
+        CompletableFuture<Void> future = CompletableFuture.runAsync(taskExecutor, executorService);
+        taskExecutor.setFuture(future);
         return taskExecutor;
     }
 
@@ -55,7 +61,7 @@ public class TaskService {
      * @param scriptBody Javascript body
      * @return Task Id
      */
-    public String runUnblocked(String scriptBody, String scriptOwner) throws ScriptCompileException {
+    public TaskExecutor runUnblocked(String scriptBody, String scriptOwner) throws ScriptCompileException {
         return runUnblocked(scriptBody, scriptOwner, null);
     }
 
@@ -65,9 +71,9 @@ public class TaskService {
      * @param scriptBody Javascript body
      * @return Task Id
      */
-    public String runUnblocked(String scriptBody, String scriptOwner, Observer changeStageObserver) throws ScriptCompileException {
-        TaskExecutor taskExecutor = new TaskExecutor(new ScriptEngineLauncher(scriptBody, scriptOwner, engine));
-        if(changeStageObserver != null) {
+    public TaskExecutor runUnblocked(String scriptBody, String scriptOwner, Observer changeStageObserver) throws ScriptCompileException {
+        TaskExecutor taskExecutor = new TaskExecutor(new ScriptEngineLauncher(scriptBody, scriptOwner, engine), appProperties);
+        if (changeStageObserver != null) {
             taskExecutor.addObserver(changeStageObserver);
         }
 
@@ -75,17 +81,18 @@ public class TaskService {
         CompletableFuture<Void> future = CompletableFuture.runAsync(taskExecutor, executorService);
         taskExecutor.setFuture(future);
 
-        return taskExecutor.getTaskId();
+        return taskExecutor;
     }
 
     /**
      * Interrupts the thread
-     *  @param taskId Task Id
-     * @param user User
+     *
+     * @param taskId Task Id
+     * @param user   User
      */
     public void interrupt(String taskId, User user) throws PermissionException, NotFoundException {
         TaskExecutor task = getTaskById(taskId, user);
-        if(task.getStage() != TaskStage.Pending && task.getStage() != TaskStage.InProgress)
+        if (task.getStage() != TaskStage.Pending && task.getStage() != TaskStage.InProgress)
             throw new NotFoundException("Script is not active");
 
         Thread thread = task.getThread().get();
@@ -101,7 +108,7 @@ public class TaskService {
      * Return script body
      *
      * @param taskId Task Id
-     * @param user User
+     * @param user   User
      * @return Script body
      */
     public String getTaskScriptBody(String taskId, User user) throws PermissionException {
@@ -114,7 +121,7 @@ public class TaskService {
      * Return script output
      *
      * @param taskId Task Id
-     * @param user User
+     * @param user   User
      * @return Script output
      */
     public String getTaskScriptOutput(String taskId, User user) throws PermissionException {
@@ -153,14 +160,20 @@ public class TaskService {
      * Returns task information.
      *
      * @param taskId Task Id
-     * @param user User
+     * @param user   User
      * @return TaskResultWidthLog
      */
     public TaskResultWidthLog getTaskResult(String taskId, User user) throws PermissionException {
         return new TaskResultWidthLog(getTaskById(taskId, user));
     }
 
-    public TaskExecutor getTaskById(String taskId) {
+    private long getActiveTaskCount() {
+        return tasks.values().stream()
+                .filter(task -> task.getStage() == TaskStage.InProgress)
+                .count();
+    }
+
+    private TaskExecutor getTaskById(String taskId) {
         return tasks.computeIfAbsent(taskId, t -> {
             throw new NotFoundException("Task not found.");
         });
@@ -169,11 +182,10 @@ public class TaskService {
     private TaskExecutor getTaskById(String taskId, User user) throws PermissionException {
         TaskExecutor task = getTaskById(taskId);
 
-        if(!user.isAdmin() && !user.getUserName().equals(task.getEngineLauncher().getScriptOwner())) {
+        if (!user.isAdmin() && !user.getUserName().equals(task.getEngineLauncher().getScriptOwner())) {
             throw new PermissionException("Permission denied");
         }
 
         return task;
     }
-
 }

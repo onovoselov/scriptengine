@@ -7,7 +7,7 @@ import org.zalando.problem.spring.web.advice.ProblemHandling;
 public class ExceptionHandling implements ProblemHandling {
     @Override
     public boolean isCausalChainsEnabled() {
-        return false;
+        return true;
     }
 
 }

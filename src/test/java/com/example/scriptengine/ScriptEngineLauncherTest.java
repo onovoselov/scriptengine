@@ -23,10 +23,8 @@ import static org.junit.Assert.assertTrue;
 @RunWith(SpringJUnit4ClassRunner.class)
 public class ScriptEngineLauncherTest {
     final private static String USER_NAME = "TestUser";
-    private TaskLogWriter writer = new TaskLogWriter(new TaskLogArrayList());
     private TaskLogList logList;
     private Writer listStdout;
-    private EngineLauncher engineLauncher;
     private ScriptEngine engine;
 
     @Before
@@ -55,11 +53,6 @@ public class ScriptEngineLauncherTest {
         assertFalse(engineLauncher.launch(listStdout));
         assertEquals(logList.size(), 1);
     }
-//
-//    @Test
-//    public void testSleep2sec() throws IOException {
-//        assertTrue(engineLauncher.launch(Fixtures.scriptSleep3s, listStdout));
-//    }
 
     @Test(expected = ScriptCompileException.class)
     public void testCompile() throws IOException, ScriptCompileException {
