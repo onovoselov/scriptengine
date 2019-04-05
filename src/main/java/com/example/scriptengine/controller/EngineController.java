@@ -10,8 +10,8 @@ import com.example.scriptengine.service.TaskExecutor;
 import com.example.scriptengine.service.TaskService;
 import com.example.scriptengine.service.script.writer.ResponseBodyEmitterWriter;
 import com.example.scriptengine.util.Converters;
+//import io.swagger.annotations.*;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,9 +24,12 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.Writer;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 
+//@Api(tags = {"Engine Resource"})
+//@SwaggerDefinition(tags = {
+//    @Tag(name = "Swagger Resource", description = "Write description here")
+//})
 @RestController
 @RequestMapping(value = "script", produces = "application/hal+json")
 public class EngineController {
@@ -46,6 +49,15 @@ public class EngineController {
      * @return Blocked mode: Returns script output Unblocked mode: HTTP/1.1 201 Created Location:
      *     /task/f9d4092f-a614-4c58-96f7-8a1e0b564078
      */
+
+//    @ApiOperation(value = "View a list of available products",response = ResponseEntity.class)
+//    @ApiResponses(value = {
+//        @ApiResponse(code = 200, message = "Successfully retrieved list"),
+//        @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+//        @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+//        @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
+//    }
+//    )
     @PostMapping()
     @PreAuthorize("authenticated")
     public ResponseEntity<ResponseBodyEmitter> newTask(
@@ -78,6 +90,7 @@ public class EngineController {
      * @param stage One of: Pending, InProgress, DoneOk, DoneError, Interrupted
      * @return Task list
      */
+    @GetMapping()
     public Resources<TaskResource> tasks(@RequestParam("stage") Optional<String> stage) {
         Collection<TaskResource> collection;
         if (stage.isPresent()) {
