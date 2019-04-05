@@ -9,5 +9,4 @@ public class ExceptionHandling implements ProblemHandling {
     public boolean isCausalChainsEnabled() {
         return true;
     }
-
 }

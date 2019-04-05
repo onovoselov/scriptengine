@@ -22,7 +22,7 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 public class ScriptEngineLauncherTest {
-    final private static String USER_NAME = "TestUser";
+    private static final String USER_NAME = "TestUser";
     private TaskLogList logList;
     private Writer listStdout;
     private ScriptEngine engine;
@@ -56,8 +56,8 @@ public class ScriptEngineLauncherTest {
 
     @Test(expected = ScriptCompileException.class)
     public void testCompile() throws IOException, ScriptCompileException {
-        EngineLauncher engineLauncher = new ScriptEngineLauncher(Fixtures.scriptError, USER_NAME, engine);
+        EngineLauncher engineLauncher =
+                new ScriptEngineLauncher(Fixtures.scriptError, USER_NAME, engine);
         engineLauncher.launch(listStdout);
     }
-
 }

@@ -21,4 +21,3 @@ public class AuthenticationFacade implements IAuthenticationFacade {
                 .orElseGet(() -> new User(authentication.getName(), "ROLE_UNKNOWN"));
     }
 }
-

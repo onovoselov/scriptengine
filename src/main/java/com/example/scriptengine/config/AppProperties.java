@@ -9,8 +9,7 @@ public class AppProperties {
     private int numThreads;
     private int interruptTimeout;
 
-    public AppProperties() {
-    }
+    public AppProperties() {}
 
     public AppProperties(int numThreads, int interruptTimeout) {
         this.numThreads = numThreads;

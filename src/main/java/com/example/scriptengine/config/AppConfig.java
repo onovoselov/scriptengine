@@ -28,7 +28,9 @@ public class AppConfig {
     @Bean
     public ObjectMapper objectMapper(Environment env) {
         ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new ProblemModule().withStackTraces("dev".equals(env.getProperty("spring.profiles.active"))));
+        mapper.registerModule(
+                new ProblemModule()
+                        .withStackTraces("dev".equals(env.getProperty("spring.profiles.active"))));
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         return mapper;

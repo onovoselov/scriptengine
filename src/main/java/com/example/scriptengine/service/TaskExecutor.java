@@ -10,7 +10,6 @@ import com.example.scriptengine.service.script.EngineLauncher;
 import com.example.scriptengine.service.script.writer.TaskLogWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -20,11 +19,9 @@ import java.util.Observable;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-/**
- * Задача в которой происходит выполнение Javascript и хранеие всей связанной с этим информацией
- */
+/** Задача в которой происходит выполнение Javascript и хранеие всей связанной с этим информацией */
 public class TaskExecutor extends Observable implements Runnable {
-    static final private Logger logger = LoggerFactory.getLogger(EngineController.class);
+    private static final Logger logger = LoggerFactory.getLogger(EngineController.class);
 
     private EngineLauncher engineLauncher;
     private Writer scriptOutputWriter;
@@ -37,9 +34,7 @@ public class TaskExecutor extends Observable implements Runnable {
     private WeakReference<Thread> thread;
     private AppProperties appProperties;
 
-    /**
-     * @param engineLauncher EngineLauncher - исполнитель скрипта
-     */
+    /** @param engineLauncher EngineLauncher - исполнитель скрипта */
     TaskExecutor(EngineLauncher engineLauncher, AppProperties appProperties) {
         init(engineLauncher);
         this.engineLauncher = engineLauncher;
@@ -47,10 +42,11 @@ public class TaskExecutor extends Observable implements Runnable {
     }
 
     /**
-     * @param engineLauncher     EngineLauncher - исполнитель скрипта
+     * @param engineLauncher EngineLauncher - исполнитель скрипта
      * @param scriptOutputWriter Writer куда будет записываться stdout javascript
      */
-    TaskExecutor(EngineLauncher engineLauncher, AppProperties appProperties, Writer scriptOutputWriter) {
+    TaskExecutor(
+            EngineLauncher engineLauncher, AppProperties appProperties, Writer scriptOutputWriter) {
         this(engineLauncher, appProperties);
         this.scriptOutputWriter = scriptOutputWriter;
     }
@@ -112,8 +108,8 @@ public class TaskExecutor extends Observable implements Runnable {
     }
 
     /**
-     * First we try to close the standard output, if it does not help, then we interrupt it,
-     * if it does not help, we stop the thread.
+     * First we try to close the standard output, if it does not help, then we interrupt it, if it
+     * does not help, we stop the thread.
      */
     void interrupt() {
         try {
@@ -148,7 +144,6 @@ public class TaskExecutor extends Observable implements Runnable {
         } catch (InterruptedException ex) {
             logger.error("awaitInterrupt", ex);
         }
-
     }
 
     void cancel() {
@@ -207,5 +202,4 @@ public class TaskExecutor extends Observable implements Runnable {
     public EngineLauncher getEngineLauncher() {
         return engineLauncher;
     }
-
 }

@@ -3,11 +3,9 @@ package com.example.scriptengine.model;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Реализация хранения списка TaskLog в ArrayList
- */
+/** Реализация хранения списка TaskLog в ArrayList */
 public class TaskLogArrayList implements TaskLogList {
-    final private List<TaskLog> taskLogList;
+    private final List<TaskLog> taskLogList;
 
     public TaskLogArrayList() {
         this.taskLogList = new ArrayList<>();

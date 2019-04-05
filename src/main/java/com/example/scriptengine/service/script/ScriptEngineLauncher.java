@@ -8,22 +8,20 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Optional;
 
-/**
- * Обертка над javax.script.ScriptEngine для запуска скрипта
- */
+/** Обертка над javax.script.ScriptEngine для запуска скрипта */
 public class ScriptEngineLauncher implements EngineLauncher {
-    final private ScriptEngine engine;
-    final private String scriptBody;
-    final private String scriptOwner;
+    private final ScriptEngine engine;
+    private final String scriptBody;
+    private final String scriptOwner;
     private CompiledScript compiledScript;
 
-    public ScriptEngineLauncher(String scriptBody, String scriptOwner, ScriptEngine engine) throws ScriptCompileException {
+    public ScriptEngineLauncher(String scriptBody, String scriptOwner, ScriptEngine engine)
+            throws ScriptCompileException {
         this.scriptBody = scriptBody;
         this.engine = engine;
         this.scriptOwner = scriptOwner;
         compile();
     }
-
 
     private void compile() throws ScriptCompileException {
         Compilable compilable = (Compilable) engine;
@@ -51,7 +49,8 @@ public class ScriptEngineLauncher implements EngineLauncher {
         } catch (ThreadInterrupted e) {
             throw e;
         } catch (Throwable e) {
-            stdoutWriter.write(Optional.ofNullable(e.getMessage()).orElseThrow(ThreadInterrupted::new));
+            stdoutWriter.write(
+                    Optional.ofNullable(e.getMessage()).orElseThrow(ThreadInterrupted::new));
             return false;
         } finally {
             stdoutWriter.close();

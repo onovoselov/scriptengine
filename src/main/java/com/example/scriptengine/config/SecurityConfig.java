@@ -18,20 +18,25 @@ import org.zalando.problem.spring.web.advice.security.SecurityProblemSupport;
 @EnableWebSecurity
 @Import(SecurityProblemSupport.class)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-    final private RestAuthenticationEntryPoint restAuthenticationEntryPoint;
-    final private SecurityProblemSupport problemSupport;
+    private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
+    private final SecurityProblemSupport problemSupport;
 
-    public SecurityConfig(RestAuthenticationEntryPoint restAuthenticationEntryPoint, SecurityProblemSupport problemSupport) {
+    public SecurityConfig(
+            RestAuthenticationEntryPoint restAuthenticationEntryPoint,
+            SecurityProblemSupport problemSupport) {
         this.restAuthenticationEntryPoint = restAuthenticationEntryPoint;
         this.problemSupport = problemSupport;
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable()
+        http.csrf()
+                .disable()
                 .authorizeRequests()
-                .antMatchers(HttpMethod.GET, "/task").permitAll()
-                .anyRequest().authenticated()
+                .antMatchers(HttpMethod.GET, "/task")
+                .permitAll()
+                .anyRequest()
+                .authenticated()
                 .and()
                 .httpBasic()
                 .authenticationEntryPoint(restAuthenticationEntryPoint);
@@ -49,12 +54,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
         auth.inMemoryAuthentication()
                 .withUser("user1")
-                .password(passwordEncoder().encode("111111")).authorities("ROLE_USER");
+                .password(passwordEncoder().encode("111111"))
+                .authorities("ROLE_USER");
         auth.inMemoryAuthentication()
                 .withUser("user2")
-                .password(passwordEncoder().encode("222222")).authorities("ROLE_USER");
+                .password(passwordEncoder().encode("222222"))
+                .authorities("ROLE_USER");
         auth.inMemoryAuthentication()
                 .withUser("admin")
-                .password(passwordEncoder().encode("111111")).authorities("ROLE_ADMIN");
+                .password(passwordEncoder().encode("111111"))
+                .authorities("ROLE_ADMIN");
     }
 }

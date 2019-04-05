@@ -1,19 +1,15 @@
 package com.example.scriptengine.service.script.writer;
 
 import com.example.scriptengine.exceptions.ThreadInterrupted;
-import org.apache.catalina.connector.ClientAbortException;
 import org.springframework.http.MediaType;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 
-import java.io.IOException;
 import java.io.Writer;
 
-/**
- * Writer for ResponseBodyEmitter
- */
+/** Writer for ResponseBodyEmitter */
 public class ResponseBodyEmitterWriter extends Writer {
 
-    final private ResponseBodyEmitter emitter;
+    private final ResponseBodyEmitter emitter;
 
     public ResponseBodyEmitterWriter(ResponseBodyEmitter emitter) {
         this.emitter = emitter;
@@ -29,12 +25,10 @@ public class ResponseBodyEmitterWriter extends Writer {
     }
 
     @Override
-    public void flush() throws IOException {
-
-    }
+    public void flush() {}
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         emitter.complete();
     }
 }

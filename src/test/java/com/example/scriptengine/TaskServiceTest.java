@@ -26,13 +26,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes= AppConfig.class)
+@ContextConfiguration(classes = AppConfig.class)
 public class TaskServiceTest {
-    final private static String USER_NAME = "TestUser";
-    final private static User user = new User(USER_NAME, "ROLE_ADMIN");
+    private static final String USER_NAME = "TestUser";
+    private static final User user = new User(USER_NAME, "ROLE_ADMIN");
 
-    @Autowired
-    private ScriptEngine scriptEngine;
+    @Autowired private ScriptEngine scriptEngine;
 
     private TaskService service;
 
@@ -42,7 +41,9 @@ public class TaskServiceTest {
     }
 
     @Test
-    public void testOkUnblocked() throws InterruptedException, ExecutionException, ScriptCompileException, PermissionException {
+    public void testOkUnblocked()
+            throws InterruptedException, ExecutionException, ScriptCompileException,
+                    PermissionException {
         TaskExecutor task1 = service.runUnblocked(Fixtures.scriptSleep3s, USER_NAME);
         TaskExecutor task2 = service.runUnblocked(Fixtures.scriptSleep3s, USER_NAME);
         task1.getFuture().get();
@@ -59,7 +60,8 @@ public class TaskServiceTest {
     }
 
     @Test
-    public void testOkBlocked() throws InterruptedException, ExecutionException, ScriptCompileException {
+    public void testOkBlocked()
+            throws InterruptedException, ExecutionException, ScriptCompileException {
         StringWriter scriptWriter = new StringWriter();
 
         TaskExecutor task = service.runBlocked(Fixtures.scriptSleep3s, USER_NAME, scriptWriter);
@@ -70,19 +72,23 @@ public class TaskServiceTest {
         assertThat(output, CoreMatchers.containsString("End sleep"));
     }
 
-    @Test(timeout=4000)
-    public void testInterrupt() throws InterruptedException, ExecutionException, ScriptCompileException, PermissionException {
+    @Test(timeout = 4000)
+    public void testInterrupt()
+            throws InterruptedException, ExecutionException, ScriptCompileException,
+                    PermissionException {
         final CountDownLatch cdl = new CountDownLatch(1);
 
-        Observer changeStageObserver = (o, arg) -> {
-            if(arg instanceof TaskStage) {
-                TaskStage stage = (TaskStage) arg;
-                if(stage == TaskStage.InProgress) {
-                    cdl.countDown();
-                }
-            }
-        };
-        TaskExecutor task = service.runUnblocked(Fixtures.scriptSleep3s, USER_NAME, changeStageObserver);
+        Observer changeStageObserver =
+                (o, arg) -> {
+                    if (arg instanceof TaskStage) {
+                        TaskStage stage = (TaskStage) arg;
+                        if (stage == TaskStage.InProgress) {
+                            cdl.countDown();
+                        }
+                    }
+                };
+        TaskExecutor task =
+                service.runUnblocked(Fixtures.scriptSleep3s, USER_NAME, changeStageObserver);
         cdl.await();
         service.interrupt(task.getTaskId(), user);
         task.getFuture().get();
@@ -90,16 +96,22 @@ public class TaskServiceTest {
     }
 
     @Test
-    public void testScriptBody() throws ScriptCompileException, ExecutionException, InterruptedException, PermissionException {
+    public void testScriptBody()
+            throws ScriptCompileException, ExecutionException, InterruptedException,
+                    PermissionException {
         TaskExecutor task = service.runUnblocked(Fixtures.script1, USER_NAME);
         task.getFuture().get();
         assertEquals(service.getTaskScriptBody(task.getTaskId(), user), Fixtures.script1);
     }
 
     @Test
-    public void testScriptOutput() throws ScriptCompileException, ExecutionException, InterruptedException, PermissionException {
+    public void testScriptOutput()
+            throws ScriptCompileException, ExecutionException, InterruptedException,
+                    PermissionException {
         TaskExecutor task = service.runUnblocked(Fixtures.script1, USER_NAME);
         task.getFuture().get();
-        assertThat(service.getTaskScriptOutput(task.getTaskId(), user), CoreMatchers.containsString("Hello ScriptEngine!!!!"));
+        assertThat(
+                service.getTaskScriptOutput(task.getTaskId(), user),
+                CoreMatchers.containsString("Hello ScriptEngine!!!!"));
     }
 }

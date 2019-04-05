@@ -4,15 +4,12 @@ import com.example.scriptengine.exceptions.ThreadInterrupted;
 import com.example.scriptengine.model.TaskLog;
 import com.example.scriptengine.model.TaskLogList;
 
-import java.io.IOException;
 import java.io.Writer;
 import java.time.LocalDateTime;
 
-/**
- * Writer для вывода в TaskLogList
- */
+/** Writer для вывода в TaskLogList */
 public class TaskLogWriter extends Writer {
-    final private TaskLogList logList;
+    private final TaskLogList logList;
     private boolean closed;
 
     public TaskLogWriter(TaskLogList logList) {
@@ -21,8 +18,8 @@ public class TaskLogWriter extends Writer {
     }
 
     @Override
-    public void write(char[] cbuf, int off, int len) throws IOException {
-        if(closed) {
+    public void write(char[] cbuf, int off, int len) {
+        if (closed) {
             throw new ThreadInterrupted("Interrupted by user");
         }
 
@@ -41,12 +38,10 @@ public class TaskLogWriter extends Writer {
     }
 
     @Override
-    public void flush() throws IOException {
-
-    }
+    public void flush() {}
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         closed = true;
     }
 }

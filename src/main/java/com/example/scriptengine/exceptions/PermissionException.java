@@ -5,8 +5,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(value = HttpStatus.UNAUTHORIZED)
 public class PermissionException extends Exception {
-    public PermissionException() {
-    }
+    public PermissionException() {}
 
     public PermissionException(String message) {
         super(message);

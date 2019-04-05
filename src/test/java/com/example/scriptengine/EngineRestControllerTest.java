@@ -22,8 +22,7 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 public class EngineRestControllerTest {
     private MockMvc mockMvc;
 
-    @Autowired
-    private WebApplicationContext webApplicationContext;
+    @Autowired private WebApplicationContext webApplicationContext;
 
     @Before
     public void setup() {
@@ -31,20 +30,19 @@ public class EngineRestControllerTest {
     }
 
     @Test
-    @WithMockUser(username="user1", password="111111")
+    @WithMockUser(username = "user1", password = "111111")
     public void restAddBlockedTaskTest() throws Exception {
-        mockMvc.perform(post("/task")
-                        .contentType(MediaType.TEXT_HTML).content(Fixtures.script1)
-        )
+        mockMvc.perform(post("/task").contentType(MediaType.TEXT_HTML).content(Fixtures.script1))
                 .andExpect(status().isOk());
     }
 
     @Test
-    @WithMockUser(username="user2", password="222222")
+    @WithMockUser(username = "user2", password = "222222")
     public void restAddUnblockedTaskTest() throws Exception {
-        mockMvc.perform(post("/task?blocked=0").
-                contentType(MediaType.TEXT_HTML).content(Fixtures.script1)
-        )
+        mockMvc.perform(
+                        post("/task?blocked=0")
+                                .contentType(MediaType.TEXT_HTML)
+                                .content(Fixtures.script1))
                 .andExpect(status().isCreated());
     }
 }

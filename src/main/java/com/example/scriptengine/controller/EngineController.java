@@ -32,23 +32,23 @@ public class EngineController {
     }
 
     /**
-     * Script execution:
-     * <i>curl -X POST -H "Content-Type: text/plain" -d @SCRIPT_FILE http://localhost:8080/task?blocked=1</i>
+     * Script execution: <i>curl -X POST -H "Content-Type: text/plain" -d @SCRIPT_FILE
+     * http://localhost:8080/task?blocked=1</i>
      *
-     * @param script               Javascript content
-     * @param blocked              Blocked mode = 1 (default), Unblocked mode = 0
+     * @param script Javascript content
+     * @param blocked Blocked mode = 1 (default), Unblocked mode = 0
      * @param uriComponentsBuilder UriComponentsBuilder
-     * @return Blocked mode: Returns script output
-     * Unblocked mode:
-     * HTTP/1.1 201 Created
-     * Location: /task/f9d4092f-a614-4c58-96f7-8a1e0b564078
+     * @return Blocked mode: Returns script output Unblocked mode: HTTP/1.1 201 Created Location:
+     *     /task/f9d4092f-a614-4c58-96f7-8a1e0b564078
      */
     @PostMapping()
     @PreAuthorize("authenticated")
-    public ResponseEntity<ResponseBodyEmitter> newTask(@RequestBody String script,
-                                                       @RequestParam("blocked") Optional<Integer> blocked,
-                                                       UriComponentsBuilder uriComponentsBuilder,
-                                                       AuthenticationFacade authenticationFacade) throws ScriptCompileException {
+    public ResponseEntity<ResponseBodyEmitter> newTask(
+            @RequestBody String script,
+            @RequestParam("blocked") Optional<Integer> blocked,
+            UriComponentsBuilder uriComponentsBuilder,
+            AuthenticationFacade authenticationFacade)
+            throws ScriptCompileException {
 
         User user = authenticationFacade.getUser();
         if (blocked.orElse(1) == 1) {
@@ -58,14 +58,17 @@ public class EngineController {
             return new ResponseEntity<>(emitter, HttpStatus.OK);
         } else {
             TaskExecutor taskExecutor = taskService.runUnblocked(script, user.getName());
-            UriComponents uriTask = uriComponentsBuilder.path("/task/{id}").buildAndExpand(taskExecutor.getTaskId());
+            UriComponents uriTask =
+                    uriComponentsBuilder
+                            .path("/task/{id}")
+                            .buildAndExpand(taskExecutor.getTaskId());
             return ResponseEntity.created(uriTask.toUri()).build();
         }
     }
 
     /**
-     * Returns a task list for a given stage.
-     * <i>curl -X GET http://localhost:8080/task?satge=DoneOk</i>
+     * Returns a task list for a given stage. <i>curl -X GET
+     * http://localhost:8080/task?satge=DoneOk</i>
      *
      * @param stage One of: Pending, InProgress, DoneOk, DoneError, Interrupted
      * @return List<TaskResult>
@@ -80,50 +83,53 @@ public class EngineController {
     }
 
     /**
-     * Returns the script body for the task.
-     * <i>curl -X GET http://localhost:8080/task/f9d4092f-a614-4c58-96f7-8a1e0b564078/body</>
+     * Returns the script body for the task. <i>curl -X GET
+     * http://localhost:8080/task/f9d4092f-a614-4c58-96f7-8a1e0b564078/body</>
      *
      * @param id Task id
      * @return Script body
      */
     @GetMapping("{id}/body")
-    public String scriptBody(@PathVariable String id, AuthenticationFacade authenticationFacade) throws PermissionException {
+    public String scriptBody(@PathVariable String id, AuthenticationFacade authenticationFacade)
+            throws PermissionException {
         return taskService.getTaskScriptBody(id, authenticationFacade.getUser());
     }
 
     /**
-     * Returns the script output for the task.
-     * <i>curl -X GET http://localhost:8080/task/f9d4092f-a614-4c58-96f7-8a1e0b564078/output</>
+     * Returns the script output for the task. <i>curl -X GET
+     * http://localhost:8080/task/f9d4092f-a614-4c58-96f7-8a1e0b564078/output</>
      *
      * @param id Task id
      * @return Script output
      */
     @GetMapping("{id}/output")
-    public String scriptOutput(@PathVariable String id, AuthenticationFacade authenticationFacade) throws PermissionException {
+    public String scriptOutput(@PathVariable String id, AuthenticationFacade authenticationFacade)
+            throws PermissionException {
         return taskService.getTaskScriptOutput(id, authenticationFacade.getUser());
     }
 
     /**
-     * Returns task info by id
-     * <i>curl -X GET http://localhost:8080/task/f9d4092f-a614-4c58-96f7-8a1e0b564078</>
+     * Returns task info by id <i>curl -X GET
+     * http://localhost:8080/task/f9d4092f-a614-4c58-96f7-8a1e0b564078</>
      *
      * @param id Task id
      * @return TaskResultWidthLog
      */
     @GetMapping("{id}")
-    public TaskResult task(@PathVariable String id, AuthenticationFacade authenticationFacade) throws PermissionException {
+    public TaskResult task(@PathVariable String id, AuthenticationFacade authenticationFacade)
+            throws PermissionException {
         return taskService.getTaskResult(id, authenticationFacade.getUser());
     }
 
     /**
-     * Terminates task by ID
-     * <i>curl -X DELETE http://localhost:8080/task/f9d4092f-a614-4c58-96f7-8a1e0b564078</>
+     * Terminates task by ID <i>curl -X DELETE
+     * http://localhost:8080/task/f9d4092f-a614-4c58-96f7-8a1e0b564078</>
      *
      * @param id Task id
      */
     @DeleteMapping("{id}")
-    public void delete(@PathVariable String id, AuthenticationFacade authenticationFacade) throws PermissionException, NotFoundException {
+    public void delete(@PathVariable String id, AuthenticationFacade authenticationFacade)
+            throws PermissionException, NotFoundException {
         taskService.interrupt(id, authenticationFacade.getUser());
     }
 }
-
