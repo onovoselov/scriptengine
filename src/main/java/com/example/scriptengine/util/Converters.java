@@ -1,12 +1,12 @@
 package com.example.scriptengine.util;
 
 import com.example.scriptengine.exceptions.NotFoundException;
-import com.example.scriptengine.model.TaskStage;
+import com.example.scriptengine.model.ScriptStage;
 
 public class Converters {
-    public static TaskStage stringToTaskStage(String stage) {
+    public static ScriptStage stringToScriptStage(String stage) {
         try {
-            return TaskStage.valueOf(stage);
+            return ScriptStage.valueOf(stage);
         } catch (IllegalArgumentException ex) {
             throw new NotFoundException("Invalid stage name");
         }

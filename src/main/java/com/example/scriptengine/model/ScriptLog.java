@@ -3,7 +3,7 @@ package com.example.scriptengine.model;
 import java.time.LocalDateTime;
 
 /** Для хранеия строки выводимой в stdout выполняющимся скриптом */
-public class TaskLog {
+public class ScriptLog {
     private LocalDateTime dateTime;
     private String message;
 
@@ -11,7 +11,7 @@ public class TaskLog {
      * @param dateTime время сообщения
      * @param message тект сообщения
      */
-    public TaskLog(LocalDateTime dateTime, String message) {
+    public ScriptLog(LocalDateTime dateTime, String message) {
         this.dateTime = dateTime;
         this.message = message;
     }

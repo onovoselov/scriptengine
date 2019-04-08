@@ -3,11 +3,11 @@ package com.example.scriptengine.service;
 import com.example.scriptengine.config.AppProperties;
 import com.example.scriptengine.controller.EngineController;
 import com.example.scriptengine.exceptions.ThreadInterrupted;
-import com.example.scriptengine.model.TaskLogArrayList;
-import com.example.scriptengine.model.TaskLogList;
-import com.example.scriptengine.model.TaskStage;
+import com.example.scriptengine.model.ScriptLogArrayList;
+import com.example.scriptengine.model.ScriptLogList;
+import com.example.scriptengine.model.ScriptStage;
 import com.example.scriptengine.service.script.EngineLauncher;
-import com.example.scriptengine.service.script.writer.TaskLogWriter;
+import com.example.scriptengine.service.script.writer.ScriptLogWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,22 +20,22 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 /** Задача в которой происходит выполнение Javascript и хранеие всей связанной с этим информацией */
-public class TaskExecutor extends Observable implements Runnable {
+public class ScriptExecutor extends Observable implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(EngineController.class);
 
     private EngineLauncher engineLauncher;
     private Writer scriptOutputWriter;
-    private String taskId;
-    private TaskStage stage;
+    private String scriptId;
+    private ScriptStage stage;
     private LocalDateTime startTime;
     private LocalDateTime stopTime;
-    private TaskLogList taskLogList;
+    private ScriptLogList scriptLogList;
     private CompletableFuture<Void> future;
     private WeakReference<Thread> thread;
     private AppProperties appProperties;
 
     /** @param engineLauncher EngineLauncher - исполнитель скрипта */
-    TaskExecutor(EngineLauncher engineLauncher, AppProperties appProperties) {
+    ScriptExecutor(EngineLauncher engineLauncher, AppProperties appProperties) {
         init(engineLauncher);
         this.engineLauncher = engineLauncher;
         this.appProperties = appProperties;
@@ -45,24 +45,24 @@ public class TaskExecutor extends Observable implements Runnable {
      * @param engineLauncher EngineLauncher - исполнитель скрипта
      * @param scriptOutputWriter Writer куда будет записываться stdout javascript
      */
-    TaskExecutor(
+    ScriptExecutor(
             EngineLauncher engineLauncher, AppProperties appProperties, Writer scriptOutputWriter) {
         this(engineLauncher, appProperties);
         this.scriptOutputWriter = scriptOutputWriter;
     }
 
     private void init(EngineLauncher engineLauncher) {
-        this.taskId = generateId();
-        changeStage(TaskStage.Pending);
+        this.scriptId = generateId();
+        changeStage(ScriptStage.Pending);
         this.engineLauncher = engineLauncher;
-        this.taskLogList = new TaskLogArrayList();
-        this.scriptOutputWriter = new TaskLogWriter(this.taskLogList);
+        this.scriptLogList = new ScriptLogArrayList();
+        this.scriptOutputWriter = new ScriptLogWriter(this.scriptLogList);
     }
 
     @Override
     public void run() {
         final Thread currentThread = Thread.currentThread();
-        currentThread.setName(taskId);
+        currentThread.setName(scriptId);
         thread = new WeakReference<>(currentThread);
         started();
         try {
@@ -90,21 +90,21 @@ public class TaskExecutor extends Observable implements Runnable {
     }
 
     private synchronized void started() {
-        changeStage(TaskStage.InProgress);
+        changeStage(ScriptStage.InProgress);
         startTime = LocalDateTime.now();
-        logger.info("STARTED: " + taskId);
+        logger.info("STARTED: " + scriptId);
     }
 
     private synchronized void stopped() {
-        changeStage(TaskStage.DoneOk);
+        changeStage(ScriptStage.DoneOk);
         stopTime = LocalDateTime.now();
-        logger.info("STOPPED: " + taskId);
+        logger.info("STOPPED: " + scriptId);
     }
 
     private synchronized void error() {
-        changeStage(TaskStage.DoneError);
+        changeStage(ScriptStage.DoneError);
         stopTime = LocalDateTime.now();
-        logger.info("ERROR: " + taskId);
+        logger.info("ERROR: " + scriptId);
     }
 
     /**
@@ -119,14 +119,14 @@ public class TaskExecutor extends Observable implements Runnable {
             scriptOutputWriter.close();
             awaitInterrupt();
             // Did not help
-            if (stage == TaskStage.InProgress) {
+            if (stage == ScriptStage.InProgress) {
                 Thread thread = getThread().get();
                 if (thread != null) {
                     thread.interrupt();
                     awaitInterrupt();
                     // Did not help
                     thread.stop();
-                    logger.info("THREAD STOP: " + taskId);
+                    logger.info("THREAD STOP: " + scriptId);
                 }
             }
 
@@ -138,7 +138,7 @@ public class TaskExecutor extends Observable implements Runnable {
 
     private void awaitInterrupt() {
         try {
-            for (int i = 0; i < 50 && stage == TaskStage.InProgress; i++) {
+            for (int i = 0; i < 50 && stage == ScriptStage.InProgress; i++) {
                 Thread.sleep(appProperties.getInterruptTimeout() / 50);
             }
         } catch (InterruptedException ex) {
@@ -147,32 +147,32 @@ public class TaskExecutor extends Observable implements Runnable {
     }
 
     void cancel() {
-        if (stage == TaskStage.Pending) {
+        if (stage == ScriptStage.Pending) {
             future.cancel(true);
             interrupted();
         }
     }
 
     private synchronized void interrupted() {
-        if (stage != TaskStage.Interrupted) {
-            changeStage(TaskStage.Interrupted);
+        if (stage != ScriptStage.Interrupted) {
+            changeStage(ScriptStage.Interrupted);
             stopTime = LocalDateTime.now();
-            logger.info("INTERRUPTED: " + taskId);
+            logger.info("INTERRUPTED: " + scriptId);
         }
     }
 
-    private void changeStage(TaskStage stage) {
+    private void changeStage(ScriptStage stage) {
         this.stage = stage;
         setChanged();
         notifyObservers(stage);
     }
 
-    public TaskStage getStage() {
+    public ScriptStage getStage() {
         return stage;
     }
 
-    public String getTaskId() {
-        return taskId;
+    public String getScriptId() {
+        return scriptId;
     }
 
     public LocalDateTime getStartTime() {
@@ -183,8 +183,8 @@ public class TaskExecutor extends Observable implements Runnable {
         return stopTime;
     }
 
-    public TaskLogList getTaskLogList() {
-        return taskLogList;
+    public ScriptLogList getScriptLogList() {
+        return scriptLogList;
     }
 
     void setFuture(CompletableFuture<Void> future) {

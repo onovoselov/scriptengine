@@ -1,11 +1,11 @@
 package com.example.scriptengine;
 
 import com.example.scriptengine.exceptions.ScriptCompileException;
-import com.example.scriptengine.model.TaskLogArrayList;
-import com.example.scriptengine.model.TaskLogList;
+import com.example.scriptengine.model.ScriptLogArrayList;
+import com.example.scriptengine.model.ScriptLogList;
 import com.example.scriptengine.service.script.EngineLauncher;
 import com.example.scriptengine.service.script.ScriptEngineLauncher;
-import com.example.scriptengine.service.script.writer.TaskLogWriter;
+import com.example.scriptengine.service.script.writer.ScriptLogWriter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,14 +23,14 @@ import static org.junit.Assert.assertTrue;
 @RunWith(SpringJUnit4ClassRunner.class)
 public class ScriptEngineLauncherTest {
     private static final String USER_NAME = "TestUser";
-    private TaskLogList logList;
+    private ScriptLogList logList;
     private Writer listStdout;
     private ScriptEngine engine;
 
     @Before
     public void setup() {
-        logList = new TaskLogArrayList();
-        listStdout = new TaskLogWriter(logList);
+        logList = new ScriptLogArrayList();
+        listStdout = new ScriptLogWriter(logList);
         ScriptEngineManager manager = new ScriptEngineManager();
         this.engine = manager.getEngineByName("Nashorn");
     }
