@@ -24,6 +24,7 @@ public class SwaggerConfig {
             .apis(RequestHandlerSelectors.withClassAnnotation(RestController.class))
             .paths(PathSelectors.any())
             .build()
+            .useDefaultResponseMessages(false)
             .apiInfo(apiInfo())
             .tags(new Tag("script", "Executing and monitoring JavaScript code."))
             .securitySchemes(Collections.singletonList(new BasicAuth("basic")))

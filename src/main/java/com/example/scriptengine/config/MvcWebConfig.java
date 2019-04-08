@@ -5,8 +5,7 @@ import org.springframework.http.CacheControl;
 import org.springframework.web.servlet.config.annotation.*;
 
 @Configuration
-@EnableWebMvc
-public class MvcWebConfig implements WebMvcConfigurer {
+public class MvcWebConfig implements WebMvcConfigurer{
 
     @Override
     public void configureViewResolvers(final ViewResolverRegistry registry) {

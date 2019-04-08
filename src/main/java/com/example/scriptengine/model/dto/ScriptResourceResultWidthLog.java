@@ -6,10 +6,10 @@ import com.example.scriptengine.service.ScriptExecutor;
 import java.util.List;
 
 /** Для вывода состояния и результатов работы скрипта */
-public class ScriptResourceWidthLog extends ScriptResource {
+public class ScriptResourceResultWidthLog extends ScriptResourceResult {
     private List<ScriptLog> output;
 
-    public ScriptResourceWidthLog(ScriptExecutor scriptExecutor) {
+    public ScriptResourceResultWidthLog(ScriptExecutor scriptExecutor) {
         super(scriptExecutor);
         this.output = scriptExecutor.getScriptLogList().getAndDeleteItems();
     }

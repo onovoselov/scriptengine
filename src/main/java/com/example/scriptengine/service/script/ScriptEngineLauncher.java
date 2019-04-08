@@ -1,6 +1,6 @@
 package com.example.scriptengine.service.script;
 
-import com.example.scriptengine.exceptions.ScriptCompileException;
+import com.example.scriptengine.exceptions.ScriptRuntimeException;
 import com.example.scriptengine.exceptions.ThreadInterrupted;
 
 import javax.script.*;
@@ -16,19 +16,19 @@ public class ScriptEngineLauncher implements EngineLauncher {
     private CompiledScript compiledScript;
 
     public ScriptEngineLauncher(String scriptBody, String scriptOwner, ScriptEngine engine)
-            throws ScriptCompileException {
+            throws ScriptRuntimeException {
         this.scriptBody = scriptBody;
         this.engine = engine;
         this.scriptOwner = scriptOwner;
         compile();
     }
 
-    private void compile() throws ScriptCompileException {
+    private void compile() throws ScriptRuntimeException {
         Compilable compilable = (Compilable) engine;
         try {
             compiledScript = compilable.compile(scriptBody);
         } catch (ScriptException e) {
-            throw new ScriptCompileException(e.getMessage());
+            throw new ScriptRuntimeException(e.getMessage());
         }
     }
 

@@ -3,12 +3,12 @@ package com.example.scriptengine.service;
 import com.example.scriptengine.config.AppProperties;
 import com.example.scriptengine.exceptions.NotFoundException;
 import com.example.scriptengine.exceptions.PermissionException;
-import com.example.scriptengine.exceptions.ScriptCompileException;
+import com.example.scriptengine.exceptions.ScriptRuntimeException;
 import com.example.scriptengine.model.ScriptLog;
 import com.example.scriptengine.model.ScriptStage;
 import com.example.scriptengine.model.User;
-import com.example.scriptengine.model.dto.ScriptResource;
-import com.example.scriptengine.model.dto.ScriptResourceWidthLog;
+import com.example.scriptengine.model.dto.ScriptResourceResult;
+import com.example.scriptengine.model.dto.ScriptResourceResultWidthLog;
 import com.example.scriptengine.service.script.ScriptEngineLauncher;
 import org.springframework.stereotype.Service;
 
@@ -46,7 +46,7 @@ public class ScriptService {
      * @return ScriptExecutor
      */
     public ScriptExecutor runBlocked(String scriptBody, String scriptOwner, Writer scriptOutputWriter)
-            throws ScriptCompileException {
+            throws ScriptRuntimeException {
         if (getActiveScriptCount() >= appProperties.getNumThreads())
             throw new NotFoundException(
                     "There are no free threads to execute the script. Try later.");
@@ -69,7 +69,7 @@ public class ScriptService {
      * @return Script Id
      */
     public ScriptExecutor runUnblocked(String scriptBody, String scriptOwner)
-            throws ScriptCompileException {
+            throws ScriptRuntimeException {
         return runUnblocked(scriptBody, scriptOwner, null);
     }
 
@@ -81,7 +81,7 @@ public class ScriptService {
      */
     public ScriptExecutor runUnblocked(
             String scriptBody, String scriptOwner, Observer changeStageObserver)
-            throws ScriptCompileException {
+            throws ScriptRuntimeException {
         ScriptExecutor scriptExecutor =
                 new ScriptExecutor(
                         new ScriptEngineLauncher(scriptBody, scriptOwner, engine), appProperties);
@@ -144,22 +144,22 @@ public class ScriptService {
      * Returns a list of scripts in a specific stage.
      *
      * @param stage script stage: Pending|InProgress|DoneOk|DoneError|Interrupted
-     * @return List<ScriptResource>
+     * @return List<ScriptResourceResult>
      */
-    public List<ScriptResource> getScripts(ScriptStage stage) {
+    public List<ScriptResourceResult> getScripts(ScriptStage stage) {
         return scripts.values().stream()
                 .filter(scriptExecutor -> scriptExecutor.getStage() == stage)
-                .map(ScriptResource::new)
+                .map(ScriptResourceResult::new)
                 .collect(Collectors.toList());
     }
 
     /**
      * Returns all scripts
      *
-     * @return List<ScriptResource>
+     * @return List<ScriptResourceResult>
      */
-    public List<ScriptResource> getScripts() {
-        return scripts.values().stream().map(ScriptResource::new).collect(Collectors.toList());
+    public List<ScriptResourceResult> getScripts() {
+        return scripts.values().stream().map(ScriptResourceResult::new).collect(Collectors.toList());
     }
 
     /**
@@ -167,10 +167,10 @@ public class ScriptService {
      *
      * @param scriptId Script Id
      * @param user User
-     * @return ScriptResourceWidthLog
+     * @return ScriptResourceResultWidthLog
      */
-    public ScriptResourceWidthLog getScriptResult(String scriptId, User user) throws PermissionException {
-        return new ScriptResourceWidthLog(getScriptExecutorById(scriptId, user));
+    public ScriptResourceResultWidthLog getScriptResult(String scriptId, User user) throws PermissionException {
+        return new ScriptResourceResultWidthLog(getScriptExecutorById(scriptId, user));
     }
 
     private long getActiveScriptCount() {

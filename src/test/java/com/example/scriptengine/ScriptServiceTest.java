@@ -3,10 +3,10 @@ package com.example.scriptengine;
 import com.example.scriptengine.config.AppConfig;
 import com.example.scriptengine.config.AppProperties;
 import com.example.scriptengine.exceptions.PermissionException;
-import com.example.scriptengine.exceptions.ScriptCompileException;
+import com.example.scriptengine.exceptions.ScriptRuntimeException;
 import com.example.scriptengine.model.ScriptStage;
 import com.example.scriptengine.model.User;
-import com.example.scriptengine.model.dto.ScriptResourceWidthLog;
+import com.example.scriptengine.model.dto.ScriptResourceResultWidthLog;
 import com.example.scriptengine.service.ScriptExecutor;
 import com.example.scriptengine.service.ScriptService;
 import org.hamcrest.CoreMatchers;
@@ -42,13 +42,13 @@ public class ScriptServiceTest {
 
     @Test
     public void testOkUnblocked()
-            throws InterruptedException, ExecutionException, ScriptCompileException,
+            throws InterruptedException, ExecutionException, ScriptRuntimeException,
                     PermissionException {
         ScriptExecutor script1 = service.runUnblocked(Fixtures.scriptSleep3s, USER_NAME);
         ScriptExecutor script2 = service.runUnblocked(Fixtures.scriptSleep3s, USER_NAME);
         script1.getFuture().get();
         script2.getFuture().get();
-        ScriptResourceWidthLog result = service.getScriptResult(script1.getScriptId(), user);
+        ScriptResourceResultWidthLog result = service.getScriptResult(script1.getScriptId(), user);
         assertEquals(result.getOutput().size(), 2);
         result = service.getScriptResult(script1.getScriptId(), user);
         assertEquals(result.getOutput().size(), 0);
@@ -61,7 +61,7 @@ public class ScriptServiceTest {
 
     @Test
     public void testOkBlocked()
-            throws InterruptedException, ExecutionException, ScriptCompileException {
+            throws InterruptedException, ExecutionException, ScriptRuntimeException {
         StringWriter scriptWriter = new StringWriter();
 
         ScriptExecutor scriptExecutor = service.runBlocked(Fixtures.scriptSleep3s, USER_NAME, scriptWriter);
@@ -74,7 +74,7 @@ public class ScriptServiceTest {
 
     @Test(timeout = 4000)
     public void testInterrupt()
-            throws InterruptedException, ExecutionException, ScriptCompileException,
+            throws InterruptedException, ExecutionException, ScriptRuntimeException,
                     PermissionException {
         final CountDownLatch cdl = new CountDownLatch(1);
 
@@ -97,7 +97,7 @@ public class ScriptServiceTest {
 
     @Test
     public void testScriptBody()
-            throws ScriptCompileException, ExecutionException, InterruptedException,
+            throws ScriptRuntimeException, ExecutionException, InterruptedException,
                     PermissionException {
         ScriptExecutor scriptExecutor = service.runUnblocked(Fixtures.script1, USER_NAME);
         scriptExecutor.getFuture().get();
@@ -106,7 +106,7 @@ public class ScriptServiceTest {
 
     @Test
     public void testScriptOutput()
-            throws ScriptCompileException, ExecutionException, InterruptedException,
+            throws ScriptRuntimeException, ExecutionException, InterruptedException,
                     PermissionException {
         ScriptExecutor scriptExecutor = service.runUnblocked(Fixtures.script1, USER_NAME);
         scriptExecutor.getFuture().get();

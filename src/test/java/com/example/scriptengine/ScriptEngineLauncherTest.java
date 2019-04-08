@@ -1,6 +1,6 @@
 package com.example.scriptengine;
 
-import com.example.scriptengine.exceptions.ScriptCompileException;
+import com.example.scriptengine.exceptions.ScriptRuntimeException;
 import com.example.scriptengine.model.ScriptLogArrayList;
 import com.example.scriptengine.model.ScriptLogList;
 import com.example.scriptengine.service.script.EngineLauncher;
@@ -36,7 +36,7 @@ public class ScriptEngineLauncherTest {
     }
 
     @Test
-    public void testOkLaunch() throws IOException, ScriptCompileException {
+    public void testOkLaunch() throws IOException, ScriptRuntimeException {
         String script = "print('Hello custom output writer');print('Hello2');";
 
         EngineLauncher engineLauncher = new ScriptEngineLauncher(script, USER_NAME, engine);
@@ -46,7 +46,7 @@ public class ScriptEngineLauncherTest {
     }
 
     @Test
-    public void testErrorLaunch() throws IOException, ScriptCompileException {
+    public void testErrorLaunch() throws IOException, ScriptRuntimeException {
         String script = "print777('Hello custom output writer');";
         EngineLauncher engineLauncher = new ScriptEngineLauncher(script, USER_NAME, engine);
 
@@ -54,8 +54,8 @@ public class ScriptEngineLauncherTest {
         assertEquals(logList.size(), 1);
     }
 
-    @Test(expected = ScriptCompileException.class)
-    public void testCompile() throws IOException, ScriptCompileException {
+    @Test(expected = ScriptRuntimeException.class)
+    public void testCompile() throws IOException, ScriptRuntimeException {
         EngineLauncher engineLauncher =
                 new ScriptEngineLauncher(Fixtures.scriptError, USER_NAME, engine);
         engineLauncher.launch(listStdout);

@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 @Relation(value = "script", collectionRelation = "sccripts")
-public class ScriptResource extends ResourceSupport {
+public class ScriptResourceResult extends ResourceSupport {
     private String scriptId;
     private String owner;
     private ScriptStage stage;
@@ -20,7 +20,7 @@ public class ScriptResource extends ResourceSupport {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private LocalDateTime stopTime;
 
-    public ScriptResource(ScriptExecutor scriptExecutor) {
+    public ScriptResourceResult(ScriptExecutor scriptExecutor) {
         this.scriptId = scriptExecutor.getScriptId();
         this.owner = scriptExecutor.getEngineLauncher().getScriptOwner();
         this.stage = scriptExecutor.getStage();

@@ -4,10 +4,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-public class ScriptCompileException extends Exception {
-    public ScriptCompileException() {}
+public class ScriptRuntimeException extends Exception {
+    public ScriptRuntimeException() {}
 
-    public ScriptCompileException(String message) {
+    public ScriptRuntimeException(String message) {
         super(message);
     }
 }
