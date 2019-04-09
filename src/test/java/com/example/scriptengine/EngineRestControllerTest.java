@@ -34,7 +34,7 @@ public class EngineRestControllerTest {
     @Test
     @WithMockUser(username = "user1", password = "111111")
     public void restAddBlockedScriptTest() throws Exception {
-        mockMvc.perform(post("/script/blocked").contentType(MediaType.TEXT_HTML).content(Fixtures.script1))
+        mockMvc.perform(post("/script/blocked").contentType(MediaType.TEXT_PLAIN_VALUE).content(Fixtures.script1))
                 .andExpect(status().isOk());
     }
 
@@ -43,7 +43,7 @@ public class EngineRestControllerTest {
     public void restAddUnblockedScriptTest() throws Exception {
         mockMvc.perform(
                         post("/script/unblocked")
-                                .contentType(MediaType.TEXT_HTML)
+                                .contentType(MediaType.TEXT_PLAIN_VALUE)
                                 .content(Fixtures.script1))
                 .andExpect(status().isCreated());
     }

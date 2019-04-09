@@ -1,6 +1,7 @@
 package com.example.scriptengine.service;
 
 import com.example.scriptengine.config.AppProperties;
+import com.example.scriptengine.exceptions.NotAcceptableException;
 import com.example.scriptengine.exceptions.NotFoundException;
 import com.example.scriptengine.exceptions.PermissionException;
 import com.example.scriptengine.exceptions.ScriptRuntimeException;
@@ -102,10 +103,10 @@ public class ScriptService {
      * @param scriptId Script Id
      * @param user User
      */
-    public void interrupt(String scriptId, User user) throws PermissionException, NotFoundException {
+    public void interrupt(String scriptId, User user) throws PermissionException, NotFoundException, NotAcceptableException {
         ScriptExecutor scriptExecutor = getScriptExecutorById(scriptId, user);
         if (scriptExecutor.getStage() != ScriptStage.Pending && scriptExecutor.getStage() != ScriptStage.InProgress)
-            throw new NotFoundException("Script is not active");
+            throw new NotAcceptableException("Script is not active");
 
         Thread thread = scriptExecutor.getThread().get();
         if (scriptExecutor.getStage() == ScriptStage.InProgress && thread != null) {

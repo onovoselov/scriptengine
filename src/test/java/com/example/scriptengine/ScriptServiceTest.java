@@ -2,6 +2,7 @@ package com.example.scriptengine;
 
 import com.example.scriptengine.config.AppConfig;
 import com.example.scriptengine.config.AppProperties;
+import com.example.scriptengine.exceptions.NotAcceptableException;
 import com.example.scriptengine.exceptions.PermissionException;
 import com.example.scriptengine.exceptions.ScriptRuntimeException;
 import com.example.scriptengine.model.ScriptStage;
@@ -74,8 +75,8 @@ public class ScriptServiceTest {
 
     @Test(timeout = 4000)
     public void testInterrupt()
-            throws InterruptedException, ExecutionException, ScriptRuntimeException,
-                    PermissionException {
+        throws InterruptedException, ExecutionException, ScriptRuntimeException,
+        PermissionException, NotAcceptableException {
         final CountDownLatch cdl = new CountDownLatch(1);
 
         Observer changeStageObserver =
