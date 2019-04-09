@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Optional;
 
-/** Обертка над javax.script.ScriptEngine для запуска скрипта */
+/** Wrapper over javax.script.ScriptEngine to run the script */
 public class ScriptEngineLauncher implements EngineLauncher {
     private final ScriptEngine engine;
     private final String scriptBody;
@@ -33,10 +33,10 @@ public class ScriptEngineLauncher implements EngineLauncher {
     }
 
     /**
-     * Выполнение скрипта
+     * Script execution
      *
      * @param stdoutWriter Writer для stdout скрипта
-     * @return результат выполнения скрипта
+     * @return script execution result
      * @throws IOException если ошибка I/O
      */
     @Override

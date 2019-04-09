@@ -19,7 +19,7 @@ import java.util.Observable;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-/** Задача в которой происходит выполнение Javascript и хранеие всей связанной с этим информацией */
+/** A task in which Javascript is executed and all information related to it is saved. */
 public class ScriptExecutor extends Observable implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(EngineController.class);
 
@@ -34,7 +34,12 @@ public class ScriptExecutor extends Observable implements Runnable {
     private WeakReference<Thread> thread;
     private AppProperties appProperties;
 
-    /** @param engineLauncher EngineLauncher - исполнитель скрипта */
+    /**
+     * Script executor
+     *
+     * @param engineLauncher Engine Launcher
+     * @param appProperties App Properties
+     */
     ScriptExecutor(EngineLauncher engineLauncher, AppProperties appProperties) {
         init(engineLauncher);
         this.engineLauncher = engineLauncher;
@@ -42,8 +47,10 @@ public class ScriptExecutor extends Observable implements Runnable {
     }
 
     /**
-     * @param engineLauncher EngineLauncher - исполнитель скрипта
-     * @param scriptOutputWriter Writer куда будет записываться stdout javascript
+     * Script executor
+     *
+     * @param engineLauncher Engine Launcher
+     * @param scriptOutputWriter Writer for stdout javascript
      */
     ScriptExecutor(
             EngineLauncher engineLauncher, AppProperties appProperties, Writer scriptOutputWriter) {
