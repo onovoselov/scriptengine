@@ -23,7 +23,8 @@ import java.util.concurrent.CompletableFuture;
 public class ScriptExecutor extends Observable implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(EngineController.class);
 
-    private EngineLauncher engineLauncher;
+    final private EngineLauncher engineLauncher;
+
     private Writer scriptOutputWriter;
     private String scriptId;
     private ScriptStage stage;
@@ -41,9 +42,9 @@ public class ScriptExecutor extends Observable implements Runnable {
      * @param appProperties App Properties
      */
     ScriptExecutor(EngineLauncher engineLauncher, AppProperties appProperties) {
-        init(engineLauncher);
         this.engineLauncher = engineLauncher;
         this.appProperties = appProperties;
+        init();
     }
 
     /**
@@ -58,10 +59,9 @@ public class ScriptExecutor extends Observable implements Runnable {
         this.scriptOutputWriter = scriptOutputWriter;
     }
 
-    private void init(EngineLauncher engineLauncher) {
+    private void init() {
         this.scriptId = generateId();
         changeStage(ScriptStage.Pending);
-        this.engineLauncher = engineLauncher;
         this.scriptLogList = new ScriptLogArrayList();
         this.scriptOutputWriter = new ScriptLogWriter(this.scriptLogList);
     }

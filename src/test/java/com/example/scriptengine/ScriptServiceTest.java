@@ -10,6 +10,7 @@ import com.example.scriptengine.model.User;
 import com.example.scriptengine.model.dto.ScriptResourceResultWidthLog;
 import com.example.scriptengine.service.ScriptExecutor;
 import com.example.scriptengine.service.ScriptService;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,7 +39,7 @@ public class ScriptServiceTest {
 
     @Before
     public void setup() {
-        service = new ScriptService(scriptEngine, new AppProperties(10, 3000));
+        service = new ScriptService(scriptEngine, new AppProperties(10, 3000), new SimpleMeterRegistry());
     }
 
     @Test

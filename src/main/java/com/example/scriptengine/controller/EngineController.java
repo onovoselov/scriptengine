@@ -12,6 +12,7 @@ import com.example.scriptengine.service.ScriptExecutor;
 import com.example.scriptengine.service.ScriptService;
 import com.example.scriptengine.service.script.writer.ResponseBodyEmitterWriter;
 import com.example.scriptengine.util.Converters;
+import io.micrometer.core.annotation.Timed;
 import io.swagger.annotations.*;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resources;
@@ -33,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 @Api(tags = {"script"})
 @RestController
 @RequestMapping(value = "script")
+@Timed("engine_controller")
 public class EngineController {
     private ScriptService scriptService;
 
