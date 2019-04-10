@@ -11,8 +11,6 @@ import com.example.scriptengine.model.User;
 import com.example.scriptengine.model.dto.ScriptResourceResult;
 import com.example.scriptengine.model.dto.ScriptResourceResultWidthLog;
 import com.example.scriptengine.service.script.ScriptEngineLauncher;
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +18,6 @@ import javax.script.ScriptEngine;
 import java.io.Writer;
 import java.util.List;
 import java.util.Map;
-import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;

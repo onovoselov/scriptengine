@@ -1,7 +1,6 @@
 package com.example.scriptengine.model.swagger;
 
 import io.swagger.annotations.ApiModelProperty;
-import org.zalando.problem.spring.web.advice.ProblemHandling;
 
 public interface ApiUnauthorized {
     @ApiModelProperty(example = "Unauthorized")
