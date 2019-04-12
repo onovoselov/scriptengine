@@ -16,7 +16,7 @@ services:
         depends_on:
             - scriptengine
     scriptengine:
-        image: scriptengine:latest
+        image: onovoselov/scriptengine:latest
         container_name: scriptengine
         networks:
             static-network:
